@@ -1,7 +1,5 @@
 # Self-attention, in plain words
 
-> **Languages:** **English** · [Tiếng Việt](./self-attention.vi.md)
-
 *Why the 1M-token context window is a ceiling, not a superpower.*
 
 This doc is for people who use Claude Code but have not read transformer papers. No math. Analogies where possible. If you want rigor, the papers linked at the bottom have it.
@@ -125,8 +123,6 @@ The model can still "see" everything in the window. But every additional irrelev
 
 This is the mechanical reason behind a counterintuitive fact: *a prompt twice as long can produce a worse answer than a prompt half the size, if the extra content is noise.* It is not that the model "forgets" — it just has less attention-weight to spare for what actually matters.
 
-> **Caveat — the spotlight is an analogy, not an equation.** Real models have many attention heads (dozens) and many layers (dozens more), each with its own softmax. Dilution is not as linear as "one spotlight, many items." A relevant token does not actually drop to 0.0001% weight in a 1M-token context — it can still dominate one head or one layer even when diluted in others. The analogy captures the *direction* of the effect (more tokens → less weight per token on average) but overstates the *magnitude*. Treat it as intuition, not prediction.
-
 ---
 
 ## The "lost in the middle" effect
@@ -135,9 +131,7 @@ Empirically, models do best on information near the **start** and **end** of the
 
 Concretely: if your 10,000-line CLAUDE.md has a critical rule at line 5,000, it is closer to useless than useful. The model has it in context, but attention cannot reliably find it.
 
-> **Caveat — the effect is real but has weakened in newer models.** The 2023 paper tested models that are now several generations old. Recent long-context models (including Claude Opus 4.x) perform substantially better on needle-in-a-haystack retrieval than the models Liu et al. measured. The lost-in-the-middle effect has not disappeared, but its magnitude is smaller than the original paper's graphs suggest. Interpret it as *"bias to front-and-end still exists, plan accordingly,"* not as *"the middle is useless."*
-
-The Claude Code docs nevertheless recommend keeping `CLAUDE.md` under ~200 lines. That threshold is driven primarily by *adherence* (shorter files produce more consistent instruction-following) rather than by raw lost-in-the-middle math, but the two effects point in the same direction.
+This is why the Claude Code docs recommend keeping CLAUDE.md under ~200 lines. It is not an arbitrary style preference — it is working around a known weakness of the architecture.
 
 ---
 
