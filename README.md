@@ -6,6 +6,8 @@ An opinionated guide to **organizing knowledge** in a Claude Code project — so
 
 This repo exists for one reason: **to help you give Claude enough durable structure that the intelligent, exploratory parts of the model land somewhere predictable**, instead of re-deriving the same facts about your codebase session after session.
 
+The shift it is aimed at is simple: from using an agentic tool like a normal user — quietly impressed every time it does something clever — to using it like a developer who knows the mechanics and controls them on purpose.
+
 > Based on daily use across a mid-size Go monorepo. YMMV — treat as a starting point, not dogma.
 
 Before we look at *how* to organize, it is worth being honest about what breaks when you do not — because that is what most Claude Code sessions look like today.
