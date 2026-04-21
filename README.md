@@ -4,7 +4,7 @@
 
 An opinionated guide to **organizing knowledge** in a Claude Code project — so you stop collaborating with Claude by vibes and start shaping its context deliberately.
 
-The goal is not to turn Claude Code into a glorified code generator — a template engine, or an autocomplete with extra steps — where every answer is pre-determined by your scaffolding and the model never gets to think. The goal is the opposite: **give Claude enough durable structure that the intelligent, exploratory parts of the model actually land somewhere predictable**, instead of re-deriving the same facts about your codebase session after session. A skill, a rule, a hook is not a replacement for the model's reasoning — it is scaffolding around it. Done right, every primitive in this guide makes the model *more* useful, not less: reliable on the things that should be reliable, free to think on the things that should not be.
+This repo exists for one reason: **to help you give Claude enough durable structure that the intelligent, exploratory parts of the model land somewhere predictable**, instead of re-deriving the same facts about your codebase session after session.
 
 > Based on daily use across a mid-size Go monorepo. YMMV — treat as a starting point, not dogma.
 
