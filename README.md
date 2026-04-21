@@ -6,7 +6,7 @@ An opinionated guide to **organizing knowledge** in a Claude Code project — so
 
 This repo exists for one reason: **to help you give Claude enough durable structure that the intelligent, exploratory parts of the model land somewhere predictable**, instead of re-deriving the same facts about your codebase session after session.
 
-The shift it is aimed at is simple: from using an agentic tool like a normal user — quietly impressed every time it does something clever — to using it like a developer who knows the mechanics and controls them on purpose.
+The shift it is aimed at is simple: from using an agentic tool like a normal user — quietly impressed every time it does something clever — to using it like a developer who knows the mechanics and controls them on purpose. From there, choosing the right model for each task becomes a deliberate knob — you can downshift to a cheaper, weaker one without fearing things will run off the rails, because the rails are the structure you built, not the model's raw intelligence.
 
 > Based on daily use across a mid-size Go monorepo. YMMV — treat as a starting point, not dogma.
 
@@ -184,7 +184,7 @@ The six primitives each answer a different version of the same question: *where 
 
 **Memory** (`~/.claude/projects/<project>/memory/*.md`) — user-local, persists across sessions. Claude writes here automatically to remember facts about you, your project, and your preferences. *Not* for things the code or `git log` can answer. [Official docs](https://docs.claude.com/en/docs/claude-code/memory).
 
-**Subagents** (invoked via the `Agent` tool) — a fresh Claude instance with its own context window, spawned to handle a scoped task. The parent only sees the final summary. Use them to isolate heavy reads (thousands of lines) or parallel independent work. [Official docs](https://docs.claude.com/en/docs/claude-code/sub-agents).
+**Subagents** (invoked via the `Agent` tool) — a fresh Claude instance with its own context window, spawned to handle a scoped task. The parent only sees the final summary. Use them to isolate heavy reads (thousands of lines), run parallel independent work, or run a cheaper model on a narrowly-scoped job without fearing it goes off the rails — the role scope *is* the guardrail, which makes model downshift safe. [Official docs](https://docs.claude.com/en/docs/claude-code/sub-agents).
 
 </details>
 
