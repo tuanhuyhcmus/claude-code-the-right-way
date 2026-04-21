@@ -1,5 +1,7 @@
 # Why context matters: three facts about LLM runtime
 
+*[English] · [Tiếng Việt](./why-context-matters.vi.md)*
+
 *The mechanical reasons every Claude Code primitive exists.*
 
 This doc is the foundation of the main README's reasoning. Every placement decision in this repo — what goes in `CLAUDE.md`, what goes in rules, what goes in skills, what stays outside the model in hooks — flows from three facts about how LLMs actually run at inference time. If you already know how LLMs work at runtime, you can skip this. If you do not, start here before reading anything else.

@@ -1,5 +1,7 @@
 # The delegation ceiling
 
+*[English] · [Tiếng Việt](./delegation-ceiling.vi.md)*
+
 *Optional companion reading to the main README. What magical delegation actually looks like when it works — and why the underlying problem does not go away even as models, context windows, and infrastructure keep improving.*
 
 The main README's opening section takes for granted a few claims: that the "delegate, don't dictate" advice genuinely works at the single-prompt level, that the model's trajectory is real, and that even so, there is a floor the trajectory does not cross. Readers who are already convinced can skip this file. Readers who would like one concrete story and a deeper reality-check should read on.

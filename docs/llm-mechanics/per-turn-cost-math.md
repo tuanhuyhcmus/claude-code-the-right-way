@@ -1,5 +1,7 @@
 # The real per-turn cost of a Claude Code session
 
+*[English] · [Tiếng Việt](./per-turn-cost-math.vi.md)*
+
 *Why adding a skill is never free — and how to calculate what a long session actually costs.*
 
 This doc does the math behind the claim in the main README: **every primitive you load has a recurring per-turn cost, not a one-time install cost.** If you have ever wondered why a long session with many skills "feels expensive," this explains it quantitatively.

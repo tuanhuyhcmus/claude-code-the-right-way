@@ -1,5 +1,7 @@
 # Self-attention, in plain words
 
+*[English] · [Tiếng Việt](./self-attention.vi.md)*
+
 *Why the 1M-token context window is a ceiling, not a superpower.*
 
 This doc is for people who use Claude Code but have not read transformer papers. No math. Analogies where possible. If you want rigor, the papers linked at the bottom have it.
