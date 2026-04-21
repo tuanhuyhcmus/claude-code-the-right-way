@@ -292,6 +292,45 @@ Claude Code exposes explicit knobs for both in skill frontmatter:
 - **Actions with side effects should almost always be explicit.** If a skill deploys, sends messages, mutates shared state, or spends money, you do not want "Claude decided to" in the post-mortem. `disable-model-invocation: true` is cheap insurance.
 - **Pure knowledge injection is fine implicit.** A skill that says *"when touching billing code, here are the invariants"* is ideal auto-trigger material — scope it with `paths:`, hide it from the menu with `user-invocable: false`.
 
+### Where a rule's content actually lives
+
+Deciding that a piece of knowledge is a *rule* does not yet say where the rule's text should sit. The same MUST / MUST NOT can be placed in three different ways, each with a different coverage-vs-cost shape:
+
+1. **Centralized** in `.claude/rules/*.md` without `paths:` — loaded on **Axis 1** every turn. Expensive, but **always enforced**, whatever the user types. Right for invariants you want to hold even when the user prompts free-form outside any skill.
+2. **Path-scoped** in `.claude/rules/*.md` with `paths:` — loaded on **Axis 2** when Claude reads a matching file. Cheap, but only fires in that area of the repo. Right for domain-local invariants (billing code, auth middleware, a specific service boundary) that only matter inside a folder.
+3. **Embedded inside a skill or agent body** — loaded on **Axis 2** only when that skill or agent is invoked. Cheapest of the three, but **disappears the moment the user goes off-script**. Right when the rule only makes sense *within* the procedure the skill runs — e.g., *"during migration review, never recommend `DROP TABLE` without a backup"*.
+
+The question to ask before placing a rule: *can the user plausibly miss this trigger and still hit the problem the rule prevents?* If yes, centralize and pay the Axis-1 tax. If no, embed it or path-scope it.
+
+This matters most when evaluating framework-heavy setups. A framework with dozens of well-designed skills can embed most of its invariants directly into skill / agent bodies and pay near-zero per-turn tax — **as long as users stay on the rails**. The moment they free-form their way into a topic the framework did not anticipate, the embedded invariants do not load, and the session silently falls back to whatever base `CLAUDE.md` or centralized rules exist. Inside the rails, the setup looks rock solid; outside the rails, the user is effectively working in a Claude Code session with no rules at all — and they will not get a warning when they cross that line.
+
+The practical consequence: before committing a rule to a skill body, ask *"what happens if the user works on this code without invoking the skill?"* If the answer is "the rule silently stops existing", that is a signal to either (a) centralize the rule instead, (b) path-scope it so it fires on the file read rather than the skill invocation, or (c) back it with a hook so enforcement does not depend on the model seeing the rule at all.
+
+### Skills as templates: generic body + per-task context
+
+A tempting mistake when customizing Claude Code is to write one skill per business scenario — `/billing-migration-planner`, `/user-onboarding-reviewer`, `/invoice-schema-validator` — until there is a skill for every workflow in the company. Each description then carries project-specific nouns on Axis 1 forever, and every new project spawns a new skill.
+
+Serious frameworks do not work this way. They keep the skill body **generic** — a planner, an executor, a reviewer, a debugger — and push business-specific knowledge into an **external context file the skill reads at runtime**. The skill is the executable; the context file is the data. Running them together produces the specialized behavior, without either half of the pair needing to know the specifics of the other at write time.
+
+This is *separation of code from data* — a pattern every backend engineer already uses (Docker image + compose env, React component + props, CLI tool + config). Applied to Claude Code, it gives you skills that stay committable, shareable across teams, and do not balloon as the project count grows. The per-project context (`./.planning/PROJECT.md`, `./.task/context.md`, whatever convention you pick) stays local to the project and evolves on its own clock.
+
+Cost distribution is clean: the skill's description stays on **Axis 1** regardless of how many projects you run, and the context file only hits **Axis 2** when the skill is actually invoked. Adding a new project adds zero per-turn tax; adding a new *kind* of workflow does.
+
+The pattern has one sharp edge: it depends entirely on the skill body knowing *where to look* for the context file. If the convention is implicit — *"read the plan in `.planning/`"* in some skills, *"load the task from `./.task/`"* in others — you get silent failure: skills invoke, try to read a path that does not exist, and fabricate instead of halting. A working version of this pattern names the context path as a convention the whole framework honors, and preferably mentions it in the skill's description so users know what to prepare before invoking.
+
+When reading someone else's `.claude/` directory, two questions unlock their composition model: **(1) do skill bodies read external state? (2) if yes, what convention tells the skill where to find it?** A framework that answers both cleanly is reusable across every project you own. A framework that embeds project-specifics directly into skill bodies is a framework you will eventually fork.
+
+### Four decisions, not one
+
+Before running the tree below, notice that what looked like one placement question is actually four, and they interact. For any piece of knowledge you are about to persist, you are really deciding:
+
+1. **Which primitive** — CLAUDE.md, rule, skill, hook, memory, subagent.
+2. **If a rule, where its text sits** — centralized (Axis 1), path-scoped (Axis 2 on file read), or embedded in a skill body (Axis 2 on invocation).
+3. **If a skill, generic body + per-task context, or business-specific body** — the first scales across projects; the second does not.
+4. **Trigger** — explicit `/command`, implicit auto-trigger, or `paths:`-scoped.
+
+Any one choice changes the tradeoffs on the other three. A rule embedded in a skill body with an implicit trigger only fires when the model decides to invoke — coverage is coupled to description engineering. Swap the trigger to explicit and coverage is coupled to user habit. Centralize the rule and coverage is guaranteed, but you pay Axis-1 tax even when the rule is irrelevant. There is no free lunch — just whichever compromise fits your failure mode.
+
 ### Decision tree — "where does this knowledge live?"
 
 Triggers answer *when* does this fire. Placement answers the earlier question — *which* primitive a given piece of knowledge belongs to in the first place. That one deserves a tree. Start from the top; the first match wins.
@@ -321,7 +360,23 @@ If nothing matches, you probably do not need to persist it. The tree is the mini
 
 ---
 
-## 6. What is next — and what this repo is not
+## 6. Reading any framework on your own
+
+Everything in this guide has been building one muscle: the ability to look at a Claude Code setup — yours or somebody else's — and see what is actually happening underneath.
+
+Pick any popular framework. ccpm. get-shit-done. oh-my-claudecode. A bundle of *"N skills × M agents"* you found on GitHub last week. None of them can bypass the primitives this guide has covered. If a framework ships something that genuinely affects Claude's behavior, that thing must be — mechanically, with no alternative path — a `CLAUDE.md`, a `.claude/rules/*.md`, a `.claude/skills/*/SKILL.md`, a `.claude/hooks/*.sh`, or a memory / subagent. There is no secret seventh primitive. Every framework is ultimately a pile of markdown and shell scripts that enrich Claude's context, turn by turn, through the same handful of mechanisms you now understand.
+
+Once you see this, you can read the `.claude/` directory of any framework like source code. Look at the skill descriptions — are they competing for Axis-1 attention carefully, or bloating the startup prefix? Are the rules `paths:`-scoped, or always-loaded? Is `disable-model-invocation` used where side effects live? Do the hooks actually enforce anything, or are they decorative? You do not need the framework's README to tell you whether it fits *your* codebase — you can grade it yourself, primitive by primitive.
+
+What you do after that is your call. Some readers will find a framework fits their codebase well enough to adopt with minor tweaks. Others will treat a framework as a *reference implementation* — copy the shapes that apply, discard the rest, write what is missing. Others will decide that the specific quirks of their repo deserve skills and rules written from scratch. All three paths are defensible. What they share is that the person making the call can now see what is actually in front of them — and that is the muscle this guide was trying to build.
+
+The shift goes further than framework-reading. Once you know every prompt competes for a shared attention budget, every `CLAUDE.md` line is a per-turn tax, and `/compact` is paraphrase rather than forgiveness, it becomes harder to hand everything to the model and hope — with Claude Code today, with whatever agentic tool replaces it tomorrow. Shallow prompts and vague intent were always bets; you now know the odds. You do not have to stop delegating. You do have to stop pretending the delegation happens in a vacuum. **You are the architect of what the model sees; the model is the mind that works on what you hand it.** The collaboration breaks down exactly when those two roles get confused.
+
+From here, you are reading on your own.
+
+---
+
+## 7. What is next — and what this repo is not
 
 ### Coming soon
 
