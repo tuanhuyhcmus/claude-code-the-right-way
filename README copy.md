@@ -2,8 +2,6 @@
 
 An opinionated guide to **organizing knowledge** in a Claude Code project — so you stop collaborating with Claude by vibes and start shaping its context deliberately.
 
-Before anything else, a word on what this repo is *for*. The goal is not to turn Claude Code into a glorified code generator — a template engine, or an autocomplete with extra steps — where every answer is pre-determined by your scaffolding and the model never gets to think. The goal is the opposite: **give Claude enough durable structure that the intelligent, exploratory parts of the model actually land somewhere predictable**, instead of re-deriving the same facts about your codebase session after session. A skill, a rule, a hook is not a replacement for the model's reasoning — it is scaffolding around it. Done right, every primitive in this guide makes the model *more* useful, not less: reliable on the things that should be reliable, free to think on the things that should not be. Done wrong, you end up paying Opus prices for expensive autocomplete. This repo is about the first direction.
-
 > Based on daily use across a mid-size Go monorepo. YMMV — treat as a starting point, not dogma.
 
 ---
@@ -12,23 +10,21 @@ Before anything else, a word on what this repo is *for*. The goal is not to turn
 
 The way most people use Claude Code today is by **delegating intention** — and Anthropic's own docs actively encourage this. Their guidance is explicit: *["Delegate, don't dictate. Think of delegating to a capable colleague. Give context and direction, then trust Claude to figure out the details."](https://code.claude.com/docs/en/how-claude-code-works#delegate-dont-dictate)* That advice is correct at the level it is written for: **a single prompt expressive enough to describe the problem on its own** — enough context, enough direction, enough signal that Claude has what it needs without being told which files to read or which commands to run. When the prompt clears that bar, the advice is exactly right: you stop micromanaging, the model picks the path, the loop tightens.
 
-> **Optional companion reading before the main argument:**
-> - [`docs/llm-mechanics/delegation-ceiling.md`](./docs/llm-mechanics/delegation-ceiling.md) — a concrete war story about what magical delegation looks like in practice (Claude self-diagnosing a trailing `/` in a Terraform URL), and why the problem does not disappear even as models, context windows, and caching keep improving. Read if you are not yet convinced that better models alone will not close the gap.
-> - [`docs/llm-mechanics/why-context-matters.md`](./docs/llm-mechanics/why-context-matters.md) — the three facts about LLM runtime (finite window, stateless re-sends, self-attention dilution) that every placement decision in the rest of this guide flows from. Read if you are not already comfortable with those mechanics.
->
-> Skip both if you are already convinced. The main argument below does not depend on them.
+And the trajectory genuinely helps. Models keep getting smarter. Context windows keep growing — 8k → 200k → 1M → whatever comes next. Engineering wins like prompt caching, path-scoped rules, compaction, and subagent isolation reduce how often the problem bites. It is fair to assume that every year the experience feels a little more forgiving, and that a lot of rough edges people hit today will soften on their own.
 
-Now notice what the advice silently assumes. *"Give context and direction"* is a **stateful promise** — the context and direction you give on turn 1 have to still be in effect when Claude acts on turn 47. That promise does not survive a long session, because the moment the conversation grows large enough to strain the context window, Claude Code does not simply refuse to continue — it triggers **compaction**, and quietly rewrites your earlier turns into a summary so the session can keep going.
+That trajectory has a floor, though. As long as the underlying system is an **LLM driven by self-attention**, three things remain true no matter how large the window gets: the window is still finite, every token still competes for a fixed attention budget (so more context means thinner signal per token — the "lost-in-the-middle" effect does not disappear at 10M tokens any more than it did at 8k), and inference is still stateless — the full conversation re-sends on every turn. Engineering improvements push the ceiling up; they do not change the shape of the ceiling. Compaction buys you a larger effective session, but it buys it by *discarding content*, not by remembering more. Prompt caching makes re-sends cheap, but the re-send still has to fit. **The problem scales with your ambition, not with the model** — the day a 10M-token window arrives, you will find yourself wanting to pack 20M tokens of project context into it.
 
-This repo is not a rebuttal of that advice. It is about what the advice does *not* cover: what happens when **every session for months** runs this way — when delegation is not a prompt-writing style but your entire workflow, with nothing in between the two ends of *"I typed a vague intent"* and *"Claude figured it out."* At that point a second question starts to matter: *do you actually know what Claude is paying attention to right now?*
+> **Before going further — if you are not already comfortable with how LLMs work at runtime** (finite context window, stateless re-sends, self-attention dilution), read [`docs/llm-mechanics/why-context-matters.md`](./docs/llm-mechanics/why-context-matters.md) first. It is short and load-bearing. Every symptom described in this section and every placement decision in the rest of the repo flows directly from the three facts in that doc. Readers who already know the basics can keep going.
+
+Now notice what the advice silently assumes. *"Give context and direction"* is a **stateful promise** — the context and direction you give on turn 1 have to still be in effect when Claude acts on turn 47. That promise does not survive a long session.
 
 A quick word on `/compact`, since everything below leans on it. When a Claude Code conversation approaches the context ceiling (1M tokens on Opus 4.7), the client runs **compaction**: older turns — your earlier prompts, every tool result, every file read, every reply Claude wrote — are **summarized into a short structured block** written by the model itself. Roughly, several hundred thousand tokens of verbatim history collapse into a few tens of thousands of tokens of summary (think ~800k → ~100–200k, depending on content). The raw exchanges are gone; only the summary survives into the next turn. This is what keeps long sessions alive past the window limit, and it is also where most of your carefully given context quietly dies.
 
 After one `/compact`, your original direction is no longer a verbatim instruction — it is a sentence or two inside a model-authored summary. After thirty `/compact` cycles across a week, it is a collection of summaries-of-summaries that may no longer agree with each other. You cannot reasonably demand that Claude remember, after its thirtieth compaction, the full intent you laid out before the first. The docs are quiet on what to do about that.
 
-There is, however, a way out — and it is the direction this entire repo is pointing toward. **If `/compact` silently strips your context, then you need to store the things that matter somewhere `/compact` cannot touch** — outside the message history, so they are re-injected fresh on the turn after compaction, as deterministic instructions rather than as a summary's paraphrase. That is exactly the job of the persistent primitives Claude Code gives you (the ones you will meet in a later section): durable places where critical intent, constraints, and workflows live, ready to be re-attached every time the conversation resets. Seen this way, the primitives are not bureaucracy around the model; they are **the answer to the compaction problem** — a way to make the most important parts of *"give context and direction"* survive the thirtieth summary. Everything that follows in this guide is about *which* things belong in which durable place, and *why*.
+This repo is not a rebuttal of that advice. It is about what the advice does *not* cover: what happens when **every session for months** runs this way — when delegation is not a prompt-writing style but your entire workflow, with nothing in between the two ends of *"I typed a vague intent"* and *"Claude figured it out."* At that point a second question starts to matter: *do you actually know what Claude is paying attention to right now?*
 
-If you are honest, the answer to that earlier question — *do you actually know what Claude is paying attention to right now?* — is probably "by feel." And that vague feeling shows up as a few very specific symptoms every long-time Claude Code user eventually recognizes:
+If you are honest, the answer is probably "by feel." And that vague feeling shows up as a few very specific symptoms every long-time Claude Code user eventually recognizes:
 
 - **Session anxiety.** You have been working with Claude for 90 minutes. Things are flowing. You are afraid to close the session. Not because you know Claude will forget some specific thing — because *you do not know what Claude is remembering at all*. For anyone with an engineering brain, that is the worst kind of dependency: **not knowing what you do not know**.
 - **Cramming.** Claude fixes one edge case. You immediately scramble to fix every similar edge case in the same session — or you write docs in a hurry, quietly praying that *"next time Claude will be smart enough to remember."* You are not doing this because it is the right workflow. You do it because you do not trust that a fresh session will land in the same attention state.
@@ -90,8 +86,6 @@ That per-item drill-down is the answer to the question "where is my context actu
 - A long conversation inflates *Messages* — that is the accumulating cost of tool results, file reads, and prior turns. This line always grows fastest.
 - *Autocompact buffer* is the reserved headroom Claude Code sets aside so `/compact` has room to run. When *Free space* gets close to that buffer, auto-compaction will fire whether you want it to or not.
 
-A cautionary tale on how bad *Memory files* can get. A friend once ran `/init` while standing in a directory that happened to contain **100 projects**. Claude dutifully scanned every one of them and scaffolded a single monster `CLAUDE.md` on the order of **~1 million tokens** — basically every project in that folder flattened into context-priors. From that point on, every new session started with the 1M-token window already ~95% full *before he typed a prompt*. Responses were slow, expensive, and slightly unhinged, and for most of a day he had no idea why. That is what happens when a `CLAUDE.md` lands at the wrong directory level: it stops being a config file and becomes a recurring per-turn tax that dwarfs the actual conversation. Always scaffold `/init` at the *project* root, never the folder-of-projects root.
-
 **The actionable insight:** if *Messages* dominates, a `/compact` or a fresh session will fix it. If *System tools*, *Memory files*, or *Skills* look disproportionately large, you have a **structural problem** that changing sessions will not fix — you need to trim an MCP server, delete a stale rule, or mark a skill `disable-model-invocation: true`.
 
 #### Are these tokens actually real? A three-way cross-check
@@ -118,6 +112,22 @@ The honest relationship between the two commands:
 
 If you only learn one, learn `/context`. It is the single most practical view into why a long session feels slow, distracted, or expensive — and the first place to look before blaming the model. Run it every 20–30 turns on a long session; watching Messages grow while Memory / Skills / Tools stay flat teaches you, viscerally, which part of your budget is under your control and which is not.
 
+### Smart reasoning is not a substitute for durable knowledge
+
+A fair pushback to this whole framing is: *"modern models are smart enough to figure things out on their own."* Sometimes they genuinely are. A real example:
+
+I once applied a Terraform config to create a server. It failed. Without any hand-holding, Claude:
+
+1. Inferred the URL might be the problem,
+2. Went to look at the provider's source to verify — but the provider was named against convention in my `.tf` file, so Claude could not find it locally,
+3. Web-searched the closest matching name,
+4. Found the actual GitHub repo, read the source,
+5. Discovered my config URL had a trailing `/` that should not be there. Fixed it.
+
+Mind-blowing, honestly. And of course, after that I did not dare close the session — surely that expertise lived *somewhere* in there. Sure enough, N turns of unrelated work later, a similar issue cropped up and Claude had to re-derive half of it from scratch.
+
+The lesson: **reasoning is not the same as durable knowledge.** A model smart enough to *derive* the right answer once will still re-derive it, imperfectly, every time its context drifts or resets. In a long session, attention rot eventually buries the answer. In a fresh session, it is never there to begin with. You need a way to make the conclusion *stick.*
+
 ### Quick recap — what are these things?
 
 The next subsection names `CLAUDE.md`, rules, skills, subagents, and hooks as the solutions. If any of those is unfamiliar, expand this first. Readers who already know the mechanics can skip.
@@ -125,7 +135,7 @@ The next subsection names `CLAUDE.md`, rules, skills, subagents, and hooks as th
 <details>
 <summary>Expand if you need a refresher on <code>CLAUDE.md</code>, rules, skills, hooks, memory, or subagents.</summary>
 
-**`CLAUDE.md`** — a markdown file at the repo (or subdirectory) root that carries **persistent project context** Claude should know at the start of every session: build commands, conventions, architecture notes, naming rules, common workflows, things you got tired of re-explaining. Claude reads it on every turn, so it is also where behavioral guidelines live ("prefer editing over creating files", "don't add comments unless asked"). You can scaffold an initial one by running `/init` inside your project — Claude analyses the codebase and proposes a starting file you can edit from there; subsequent `/init` runs suggest improvements rather than overwriting. A stale, contradictory, or 400-line `CLAUDE.md` is the single most common source of the "Claude Code keeps doing the wrong thing" complaint, because every bullet in it is spent on every turn, whether it still reflects the project or not. [Official docs](https://docs.claude.com/en/docs/claude-code/memory).
+**`CLAUDE.md`** — a markdown file at the repo (or subdirectory) root. Claude reads it every turn, so it's the right place for behavioral guidelines that apply to all tasks ("prefer editing over creating files", "don't add comments unless asked"). [Official docs](https://docs.claude.com/en/docs/claude-code/memory).
 
 **Rules** (`.claude/rules/*.md`) — markdown files under `.claude/rules/` that Claude Code auto-discovers recursively and loads with the same priority as `.claude/CLAUDE.md`. Use them to split project invariants ("MUST / MUST NOT" statements) out of a bloated `CLAUDE.md`. A YAML `paths:` frontmatter scopes a rule to specific file patterns so it only loads when Claude touches matching files — great for reducing context noise. User-level rules live at `~/.claude/rules/`. [Official docs](https://code.claude.com/docs/en/memory#organize-rules-with-claude/rules/).
 
