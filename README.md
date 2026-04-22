@@ -10,6 +10,16 @@ The shift it is aimed at is simple: from using an agentic tool like a normal use
 
 > Based on daily use across a mid-size Go monorepo. YMMV — treat as a starting point, not dogma.
 
+### Outline
+
+1. [**"Delegate, don't dictate" silently breaks in long sessions**](#1-delegate-dont-dictate-silently-breaks-in-long-sessions) — the failure mode this guide exists to fix: how `/compact` and fresh sessions both erode the context you carefully gave, and the four symptoms every long-time Claude Code user recognizes.
+2. [**See what Claude is actually carrying**](#2-see-what-claude-is-actually-carrying) — `/memory` and `/context`, the two diagnostic commands that turn *"by feel"* into something measurable, plus the thesis line: *Claude Code inconsistency is usually a context-architecture problem, not a model-intelligence problem.*
+3. [**Why bigger models will not save you**](#3-why-bigger-models-will-not-save-you--three-facts-about-llm-runtime) — three facts about LLM runtime (finite window, stateless re-sends, self-attention dilution) that explain why the problem scales with your ambition, not with the model.
+4. [**The primitives**](#4-the-primitives--durable-places-outside-compact) — six durable places to put knowledge that `/compact` cannot rewrite: CLAUDE.md, rules, skills, hooks, memory, subagents.
+5. [**Placement mechanics**](#5-placement--three-axes-two-triggers-one-decision-tree) — three axes of cost, description-vs-body trust boundary, explicit-vs-implicit triggers, rule-content placement, skills-as-templates, and a decision tree for where each piece of knowledge lives.
+6. [**Reading any framework on your own**](#6-reading-any-framework-on-your-own) — the muscle this guide builds: you can now open any `.claude/` directory and see the mechanics doing real work, not magic.
+7. [**What is next**](#7-what-is-next--and-what-this-repo-is-not) — coming-soon docs, scope boundaries, and a call for contributors on a live context dashboard.
+
 Before we look at *how* to organize, it is worth being honest about what breaks when you do not — because that is what most Claude Code sessions look like today.
 
 ---
