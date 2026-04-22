@@ -1,7 +1,5 @@
 # Claude Code, the right way
 
-***English** · [Tiếng Việt](./README.vi.md)*
-
 An opinionated guide to **organizing knowledge** in a Claude Code project — so you stop collaborating with Claude by vibes and start shaping its context deliberately.
 
 This repo exists for one reason: **to help you give Claude enough durable structure that the intelligent, exploratory parts of the model land somewhere predictable**, instead of re-deriving the same facts about your codebase session after session.

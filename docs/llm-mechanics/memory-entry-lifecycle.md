@@ -1,7 +1,5 @@
 # The lifecycle of each `/memory` entry
 
-*[English] · [Tiếng Việt](./memory-entry-lifecycle.vi.md)*
-
 *What gets loaded when, what survives `/compact`, and what Anthropic's prompt cache actually stores.*
 
 `/memory` gives you a snapshot of everything currently loaded from disk into your session's context: every `CLAUDE.md`, every loaded rule, every auto-memory file. What it does not tell you is that **the items in that snapshot do not all live the same way**. Knowing how each one loads, survives compaction, and enters the prompt cache is what separates *"stuff Claude reads once"* from *"stuff Claude keeps paying for on every turn."*

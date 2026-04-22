@@ -1,7 +1,5 @@
 # Building the missing dashboard — a call for contributors
 
-*[English] · [Tiếng Việt](./dashboard-rfc.vi.md)*
-
 *RFC for a live context-inspector tool. Moved out of the main README because it is a side-quest to the main argument — but an actionable one.*
 
 The central thesis of the main README is that **understanding what Claude knows right now is a skill, and the tools to see it are underbuilt.** The built-in `/context` command is the best diagnostic view that exists, and it is a text dump. Anthropic's interactive ["Explore the context window"](https://code.claude.com/docs/en/context-window#what-the-timeline-shows) is a hardcoded simulation in their docs — not a live inspector of your own session. The closest open-source attempts fall short in specific, addressable ways: [`claude-devtools`](https://github.com/matt1398/claude-devtools) aggregates skills into a single bucket; [`token-dashboard`](https://github.com/nateherkai/token-dashboard) tracks invoked skills only, not descriptions; [`cc-dump`](https://github.com/brandon-fryslie/cc-dump) shows raw system prompt but does not parse it.
