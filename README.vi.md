@@ -2,7 +2,7 @@
 
 *[English](./README.md) · **Tiếng Việt***
 
-Trước khi bắt đầu, một điểm về cách nó thực sự chạy — nếu chưa thấm, toàn bộ bài viết sẽ không có chỗ bám:
+Trước khi bắt đầu, một điểm về cách các chatbot AI hay agentic tool thực sự chạy bên dưới (miễn là chúng vẫn dựa trên LLM) — nếu chưa thấm, toàn bộ bài viết sẽ không có chỗ bám:
 
 Khi bạn chat với một chatbot hay một agentic tool, ban đầu bạn phải nêu vấn đề đang gặp, thứ muốn làm, giới thiệu các thứ... Theo kinh nghiệm dùng của tôi, thường phải qua vài turn qua lại thì câu trả lời của model mới thực sự bám đúng yêu cầu — coi đây là một quan sát kinh nghiệm, không phải mốc cố định nằm trong cơ chế. Phần thực sự chạy bên dưới thì khác: để turn thứ N vẫn "nhớ" được những gì turn 1→N-1 đã nói, client phải gửi lại *toàn bộ hội thoại turn 1→N-1 lên cho model ở mỗi turn, để nó tự suy nghĩ lại từ đầu* — nghe ảo không. Và đây là điểm quan trọng nhất về cách LLM hoạt động: *nó stateless*. Hồi LLM mới ra, tôi cũng háo hức clone một model về chạy trên máy — turn 1 giới thiệu *"tôi tên là…"*, turn 2 hỏi lại *"mày biết tao là ai không"*, bạn biết câu trả lời rồi đấy. Xong hí hửng đi tìm hiểu thì mới vỡ ra: phải gửi cả history cũ lên thì nó mới biết. Và về cơ bản, với giới hạn hiện tại, tổng lịch sử có thể gửi lên chạm trần ở mức khoảng 1M token (một **token** xấp xỉ 3–4 ký tự tiếng Anh — 1M token tương đương cỡ vài trăm nghìn dòng code) — đây là lý do vì sao cần tổ chức cơ cấu đó phù hợp để phục vụ các bài toán to.
 
