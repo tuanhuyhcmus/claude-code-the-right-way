@@ -48,7 +48,7 @@ name: gsd:plan-phase
 description: Create detailed phase plan (PLAN.md) with verification loop
 argument-hint: "[phase] [--auto] [--research] [--gaps] [--prd <file>]"
 agent: gsd-planner
-allowed-tools: [Read, Write, Bash, Glob, Grep, Task, AskUserQuestion]
+allowed-tools: [Read, Write, Bash, Glob, Grep, Agent, AskUserQuestion]
 ---
 <objective>
 Create executable phase prompts (PLAN.md files) for a roadmap phase.
@@ -73,7 +73,7 @@ The dispatcher exists to parse arguments and point Claude at the workflow file. 
 
 `.claude/get-shit-done/workflows/plan-phase.md` (≈ 500 lines — excerpt):
 
-```markdown
+````markdown
 <purpose>
 Create executable phase prompts. Orchestrates gsd-phase-researcher, gsd-planner,
 gsd-plan-checker with a revision loop (max 3 iterations).
@@ -101,7 +101,7 @@ Parse JSON for: phase_dir, phase_number, has_research, has_context...
 
 ## 2. Parse Arguments
 Extract phase number, flags (--research, --gaps, --prd, --text).
-```
+````
 
 Step-by-step orchestration with explicit gates and agent-spawn calls. Hits the context window only when `/gsd:plan-phase` actually runs — Axis 2, not Axis 1.
 
@@ -136,7 +136,7 @@ The orchestrator provides user decisions in <user_decisions> tags from
 </context_fidelity>
 ```
 
-The description field is the Axis-1 tax (competing with 32 other agents to be picked). The body loads only when `Task()` spawns this subagent with its isolated context window — that isolation is what lets the planner read 50k tokens of codebase patterns without polluting the parent.
+The description field is the Axis-1 tax (competing with 32 other agents to be picked). The body loads only when `Agent()` spawns this subagent with its isolated context window — that isolation is what lets the planner read 50k tokens of codebase patterns without polluting the parent.
 
 ### Reference file — shared vocabulary
 

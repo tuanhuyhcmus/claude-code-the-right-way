@@ -12,7 +12,7 @@ Two facts to internalize for the rest of the piece: **context (the conversation 
 
 ### Everything is about enriching context
 
-Everything that used to be called *prompt engineering* in the AI-chat era — and that has now been standardized in the agentic era as **memory, skills, rules, agents, hooks**... — is in the end the same exercise: improve that context, so each turn lands with more of the right information loaded. Given a better context, an AI Model (gpt5, minimax2.7, claude opus 4.6, Qwen 3.5...) reasoning over it **MIGHT** return a better result.
+Everything that used to be called *prompt engineering* in the AI-chat era — and that has now been standardized in the agentic era as **memory, skills, rules, agents, hooks**... — is in the end the same exercise: improve that context, so each turn lands with more of the right information loaded. Given a better context, an AI Model (gpt5, minimax2.7, claude opus 4.7, Qwen 3.5...) reasoning over it **MIGHT** return a better result.
 
 Why *MIGHT*? If you have ever used an open-source model in the ~30B-parameter range or below, you already understand: no matter how carefully you prepare the context, getting the thing to reason and produce something *relevant* is already a small miracle, never mind smart or sensible. That *MIGHT* is also the antidote to anger when claude opus or gpt5.x occasionally goes off the rails.
 
@@ -23,7 +23,7 @@ Interacting with an AI (chat or agentic) is, at the bottom, just *the client sen
 
 One impossible, one hard. What is left is enriching context.
 
-At which point a fair question shows up: *"OK, can I just wait for the context window to keep getting bigger?"* There is a basic fact most casual users do not know: where the **1M** number actually comes from, and why it is not just bumped to 1TB. The condensed answer is in the appendix [Three facts about LLM runtime](./docs/llm-mechanics/three-llm-runtime-facts.md) — with the deeper material in [self-attention](./docs/llm-mechanics/self-attention.md) and [why context matters](./docs/llm-mechanics/why-context-matters.md). Read the appendix — or, if you would rather not, take it on faith that **1M is a *mechanical* ceiling, not a knob the vendor chose**.
+At which point a fair question shows up: *"OK, can I just wait for the context window to keep getting bigger?"* There is a basic fact most casual users do not know: where the **1M** number actually comes from, and why it is not just bumped to 1T. The condensed answer is in the appendix [Three facts about LLM runtime](./docs/llm-mechanics/three-llm-runtime-facts.md) — with the deeper material in [self-attention](./docs/llm-mechanics/self-attention.md) and [why context matters](./docs/llm-mechanics/why-context-matters.md). Read the appendix — or, if you would rather not, take it on faith that **1M is a *mechanical* ceiling, not a knob the vendor chose**.
 
 ### Chatbox and agentic, fundamentally the same
 
@@ -36,7 +36,7 @@ Before agentic tools existed, the formula was `chatbox + user (human) = agentic`
 
 **Server**: the model runs here. It accepts requests from the client, processes them, and returns a result. The processing itself is the same for chatbox and agentic. The difference: agentic requests carry a *list of tools*; the server, beyond text, can also return *commands the client should execute* — and the result of those tool calls is sent back up on the next turn.
 
-I am a developer, and I do not love accepting things that "just work," so here is one fact I love to POC: when you use a ready-made ecosystem (Claude Code, Antigravity), everything is hidden from the end user so it feels like magic. Try pairing a client with a model that has **no tool-calling capability** — it is as helpless as the old chatbox. Conversely, a model that cannot return instructions for the client to call tools is just as helpless — the way early LLMs were, when they could only generate text.
+When you use a ready-made solution (Claude Code, Antigravity), everything is hidden from the end user so it feels like magic — because both the client and the model are strong. Try pairing a strong client with a not-yet-strong model (e.g. models under 30B parameters): no matter how good the context is, it will not behave in a way you find satisfying. But it does make the roles of client and server very clear. That clarity helps you later: when you swap clients or models, you know exactly what you are trading off.
 
 While we are at it, I would suggest setting up your own POC environment: **client (Claude Code) → proxy (any one will do) → server**. The client calls through the proxy, the proxy calls the server, and you capture the requests in both directions to see what is actually being sent. Most of the intuition in this article will arrive on its own after that exercise.
 
@@ -44,7 +44,7 @@ While we are at it, I would suggest setting up your own POC environment: **clien
 
 Everything above is the universal problem of using AI today, and it is mostly **the finiteness of context**. The rest of this guide is the concrete version: how to steer that context skillfully so the answers come back better — through one specific client, **Claude Code**.
 
-This is not a *best practice*; it is personal experience, and none of it is gospel. **What is gospel is the section above.**
+This is not a *best practice*; it is personal experience, and none of it is gospel. **What is gospel is the section above.** There are plenty of other best practices out there; what may differ here is that I explain *why* I do it this way and why it works, grounded in the underlying mechanics. I hope that makes us smarter about choosing among ready-made solutions to use, rather than treating this guide as a closed solution kit.
 
 This repo exists for one reason: **to help you give Claude enough durable structure that the intelligent, exploratory parts of the model land somewhere predictable**, instead of re-deriving the same facts about your codebase session after session.
 
@@ -68,11 +68,11 @@ This is **not** the right starting point if you are brand-new to Claude Code (yo
 1. [**"Delegate, don't dictate" silently breaks in long sessions**](#1-delegate-dont-dictate-silently-breaks-in-long-sessions) — the failure mode this guide exists to fix: how `/compact` and fresh sessions both erode the context you carefully gave, and the four symptoms every long-time Claude Code user recognizes.
 2. [**See what Claude is actually carrying**](#2-see-what-claude-is-actually-carrying) — `/memory` and `/context`, the two diagnostic commands that turn *"by feel"* into something measurable, plus the thesis line: *Claude Code inconsistency is usually a context-architecture problem, not a model-intelligence problem.*
 3. [**The primitives**](#3-the-primitives--durable-places-outside-compact) — six durable places to put knowledge that `/compact` cannot rewrite: CLAUDE.md, rules, skills, hooks, memory, subagents.
-4. [**Placement mechanics**](#4-placement--three-axes-two-triggers-one-decision-tree) — three axes of cost, description-vs-body trust boundary, explicit-vs-implicit triggers, rule-content placement, skills-as-templates, and a decision tree for where each piece of knowledge lives.
+4. [**Placement mechanics**](#4-placement--three-axes-two-triggers) — three axes of cost, description-vs-body trust boundary, explicit-vs-implicit triggers, rule-content placement, skills-as-templates.
 5. [**Reading any framework on your own**](#5-reading-any-framework-on-your-own) — the muscle this guide builds: you can now open any `.claude/` directory and see the mechanics doing real work, not magic.
 6. [**What is next**](#6-what-is-next--and-what-this-repo-is-not) — coming-soon docs, scope boundaries, and a call for contributors on a live context dashboard.
 
-> The mechanical question *"why 1M and not 1Tb"* is answered in the appendix [Three facts about LLM runtime](./docs/llm-mechanics/three-llm-runtime-facts.md) — required reading for anyone who has not yet internalized finite-shared windows, stateless re-sends, and self-attention dilution.
+> The mechanical question *"why 1M and not 1T"* is answered in the appendix [Three facts about LLM runtime](./docs/llm-mechanics/three-llm-runtime-facts.md) — required reading for anyone who has not yet internalized finite-shared windows, stateless re-sends, and self-attention dilution.
 
 Before we look at *how* to organize, it is worth being honest about what breaks when you do not — because that is what most Claude Code sessions look like today.
 
@@ -181,11 +181,11 @@ The honest relationship between the two commands:
 
 ### In sum: mechanism, not intelligence
 
-This is the place to close out the foundation before going further. Because if you have reached this point and still do not see *why reorganizing how you use Claude is important and necessary*, we should stop here — either I am wrong (not a chance), or you are.
+This is the place to close out the foundation before going further. Because if you have reached this point and still do not see *why reorganizing how you use Claude is important and necessary*, we should not continue.
 
-If there is one sentence to summarize: the problem is not how smart Claude is — it is the *mechanism* of how LLMs run at inference time. Section 1 gave you four symptoms of not knowing what Claude remembers. Section 2 gave you two commands to measure that. The three-facts appendix tells you why a bigger model or a bigger window does not fix the root. Taken together, they change your **expectations** about Claude "remembering" work: it has a context window where everything you load competes, reloaded from scratch on every turn, and silently summarized when the limit is reached.
+*Organizing what must be remembered, where to put it, and when to re-inject it* is no longer a detail optimization — it is the baseline requirement for long sessions not to break.
 
-Under those conditions, *organizing what must be remembered, where to put it, and when to re-inject it* is no longer a detail optimization — it is the baseline requirement for long sessions not to break.
+Honestly, this ORGANIZING work is something AI providers have been doing too: client (agentic tool) and server (model runtime) keep coordinating better to ship features like auto-memory, which is quietly doing exactly that. It is not impossible that, once models get smart enough, auto-(memory, rules, skills...) ends up doing this better than we can ourselves — but until that day arrives, we should prepare ourselves for it. That is also why work like *prompt engineering* faded from hype before it could fully take off — yet who would deny that providing a good prompt (good context) helps the answer?
 
 You can stop reading here and go research on your own — you have the questions now. What follows is mostly *ideas* and *framing* for that organization. One part I do care about: comparing how the various Claude Code frameworks — spawned to solve this same set of problems — actually work.
 
@@ -236,7 +236,9 @@ Naming the six primitives is the easy half. The hard half is knowing *which* one
 
 ---
 
-## 4. Placement — three axes, two triggers, one decision tree
+## 4. Placement — three axes, two triggers
+
+A note up front: you can read Anthropic's official definitions and that is enough — you do not need this section. What this section adds is a personal take on how the primitives (skill, agent, rule...) complement each other in enriching context, plus a few mixed variants you will run into in practice. If you have read the [per-turn cost appendix](./docs/llm-mechanics/per-turn-cost-math.md) carefully, this section also helps you weigh whether to place a body (a step-by-step guide for an agent) inside a rule, a skill body, or a subagent body — which is theoretically more efficient.
 
 Placement decisions get much easier once you internalize that these primitives live on **three different axes**, not one.
 
@@ -379,33 +381,6 @@ Before running the tree below, notice that what looked like one placement questi
 4. **Trigger** — explicit `/command`, implicit auto-trigger, or `paths:`-scoped.
 
 Any one choice changes the tradeoffs on the other three. A rule embedded in a skill body with an implicit trigger only fires when the model decides to invoke — coverage is coupled to description engineering. Swap the trigger to explicit and coverage is coupled to user habit. Centralize the rule and coverage is guaranteed, but you pay Axis-1 tax even when the rule is irrelevant. There is no free lunch — just whichever compromise fits your failure mode.
-
-### Decision tree — "where does this knowledge live?"
-
-Triggers answer *when* does this fire. Placement answers the earlier question — *which* primitive a given piece of knowledge belongs to in the first place. That one deserves a tree. Start from the top; the first match wins.
-
-```
-Is it derivable from `git log` or by reading the code?
-  └── YES → store NOTHING. Don't pollute context.
-
-Is it a MUST / MUST NOT that's always true, regardless of task?
-  ├── Machine-checkable (grep, lint)? → rule + hook
-  └── Human-enforced only?            → rule
-
-Is it a "when user says X, do Y₁ → Y₂ → Y₃" workflow?
-  └── YES → skill
-
-Does answering it require reading >2000 lines of source?
-  └── YES → subagent (isolate from main context)
-
-Is it a fact about the user or project that changes over time?
-  └── YES → memory
-
-Is it style / tone / philosophy spanning the whole repo?
-  └── YES → CLAUDE.md
-```
-
-If nothing matches, you probably do not need to persist it. The tree is the minimum discipline — everything in this repo is an attempt to make it second nature.
 
 ---
 
