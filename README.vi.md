@@ -4,9 +4,16 @@
 
 Trước khi nói tới Claude Code cụ thể, có một lớp nền chung cho mọi chatbot và agentic tool dựa trên LLM. Phần này dành cho cả người không dùng Claude — bạn có thể đọc để hiểu cách một chat AI hay Agentic AI hoạt động và Nếu chưa thấm, mọi thứ phía sau liên quan tới cách dùng Claude code sẽ rất khó để hiểu.
 
-### Cách AI hoạt động ở mức cơ bản
+### Thuật ngữ dùng trong bài
 
-Trước hết, **model** là bộ não — tên kỹ thuật là **LLM** (Large Language Model) — model có khả năng cốt lõi là xử lý ngôn ngữ (các thế hệ mới cũng đọc được ảnh, audio, ...). Nó chạy ở server của nhà cung cấp dịch vụ AI như OpenAI, Anthropic (giải pháp dạng enterprise); hoặc bạn có thể tự tải về các model nguồn mở (như Qwen, DeepSeek, Llama, gpt-oss, ...) và host trên server của mình, miễn là đáp ứng đủ cấu hình phần cứng về GPU. Hai từ `model` và `LLM` chỉ cùng một thứ trong phạm vi bài này, dùng lẫn lộn tuỳ ngữ cảnh: nói `model` khi muốn nhấn vào *phiên bản cụ thể* (Opus 4.7, GPT-5, v.v.), nói `LLM` khi nói về *cơ chế chung* (stateless, attention, context window). Mỗi nhà cung cấp phát hành nhiều model để đa dạng chất lượng và giá, cho người dùng tiếp cận tuỳ nhu cầu.
+- **model** / **LLM** (Large Language Model) — bộ não AI chạy ở server. Có hai cách dùng: dịch vụ enterprise (OpenAI, Anthropic) hoặc tự host model nguồn mở (Qwen, DeepSeek, Llama, gpt-oss, ...) nếu đủ GPU. Frontier model hiện nay đọc được cả ảnh/audio chứ không chỉ ngôn ngữ. Trong bài tôi dùng `model` khi nhấn vào *phiên bản cụ thể* (Opus 4.7, GPT-5, ...), `LLM` khi nói về *cơ chế chung* (stateless, attention, context window).
+- **token** — đơn vị văn bản model đọc/xử lý. Không phải ký tự, không hẳn là từ — là subword. Callout *Về token* phía dưới có ví dụ.
+- **turn** — một lượt qua-lại: bạn gửi prompt → AI trả lời.
+- **chatbox** — UI chat thuần, không gọi tool ngoài (ChatGPT web, Claude.ai web).
+- **agentic tool** — client AI có thể gọi tool trên máy bạn: đọc/sửa file, gọi shell, mở Chrome... (Claude Code, Antigravity, Codex, OpenClaw).
+- **client / server** — chi tiết ở section *Chatbox và agentic, về bản chất là một* phía dưới.
+
+### Cách AI hoạt động ở mức cơ bản
 
 Khi bạn chat với một chatbot hay một agentic tool, ban đầu bạn phải nêu vấn đề đang gặp, thứ muốn làm, giới thiệu các thứ... Theo kinh nghiệm dùng của tôi, thường phải qua vài turn qua lại thì câu trả lời của model mới thực sự bám đúng yêu cầu — coi đây là một quan sát kinh nghiệm, không phải mốc cố định nằm trong cơ chế. Để model "hiểu" được vấn đề qua từng turn thì bên dưới thực sự trông như sau: để turn thứ N vẫn "nhớ" được những gì turn 1→N-1 đã nói, client phải gửi lại *toàn bộ hội thoại turn 1→N-1 lên cho model ở mỗi turn, để nó TỰ SUY NGHĨ LẠI TỪ ĐẦU* — nghe ảo không. Và đây là điểm quan trọng nhất về cách LLM hoạt động: *nó stateless*. Hồi LLM mới ra, tôi cũng háo hức clone một model về chạy trên máy — turn 1 giới thiệu *"tôi tên là…"*, turn 2 hỏi lại *"mày biết tao là ai không"*, bạn biết câu trả lời rồi đấy. Xong hí hửng đi tìm hiểu thì mới vỡ ra: phải gửi cả history cũ lên thì nó mới biết.
 

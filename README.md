@@ -4,9 +4,16 @@
 
 Before getting into Claude Code specifically, there is a layer of mechanics shared by every chatbot and agentic tool built on an LLM. This part is for everyone — including readers who do not use Claude. You can read it just to understand how an AI chat or an agentic AI actually works; and if it has not sunk in, everything further down about how to use Claude Code will be very hard to follow.
 
-### How AI works at the basic level
+### Glossary
 
-First, a quick definition. The **model** is the brain — its technical name is **LLM** (Large Language Model) — a model whose core capability is processing language (newer generations can also read images, audio, etc.). It runs on the server of an AI provider like OpenAI or Anthropic (the enterprise option); or you can download an open-source model (Qwen, DeepSeek, Llama, gpt-oss, ...) and host it on your own server, as long as you have the GPU hardware to support it. The terms `model` and `LLM` refer to the same thing within this article, used interchangeably depending on context: I say `model` when emphasizing a *specific version* (Opus 4.7, GPT-5, etc.), and `LLM` when talking about the *general mechanism* (stateless, attention, context window). Each provider releases multiple models to span different quality and price tiers, so users can pick what fits their needs.
+- **model** / **LLM** (Large Language Model) — the AI brain, running on a server. Two ways to access: an enterprise provider (OpenAI, Anthropic) or self-hosting an open-weight model (Qwen, DeepSeek, Llama, gpt-oss, ...) if you have the GPU. Frontier models today also read images and audio, not just language. Throughout this article I use `model` when emphasizing a *specific version* (Opus 4.7, GPT-5, ...) and `LLM` when talking about the *general mechanism* (stateless, attention, context window).
+- **token** — the unit of text the model reads and processes. Not a character, not quite a word — it's a subword. The *A note on tokens* callout below has an example.
+- **turn** — one back-and-forth: you send a prompt → the AI replies.
+- **chatbox** — a pure chat UI with no external tool calls (ChatGPT web, Claude.ai web).
+- **agentic tool** — an AI client that can call tools on your machine: read/write files, run shell, open Chrome... (Claude Code, Antigravity, Codex, OpenClaw).
+- **client / server** — explained in detail in the section *Chatbox and agentic, fundamentally the same* below.
+
+### How AI works at the basic level
 
 When you chat with a chatbot or an agentic tool, you start by laying out the problem you are facing, what you want to do, introducing things... In my own use it usually takes several turns of back-and-forth before the model's responses feel like they are actually tracking the requirement — call it a rough observation, not a mechanical cutoff. Here is the mechanical part: for turn N to "remember" what turns 1→N-1 established, the client has to re-send *the entire turns 1→N-1 conversation back to the model every single turn, so IT CAN REASON THROUGH THEM ALL OVER AGAIN FROM SCRATCH* — sounds absurd, right? This is the single most important thing about how LLMs work: *they are stateless*. When LLMs first came out, I also excitedly cloned a model to run locally — turn 1 I introduced myself with *"my name is…"*, turn 2 I asked *"do you know who I am?"*, you already know the answer. Digging in, the reveal: you have to send the full prior history for the model to know anything.
 
