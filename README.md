@@ -1,28 +1,50 @@
 # Claude Code, the right way
 
-Before we begin, one mechanical fact about how AI chatbots and agentic tools actually run under the hood (as long as they're built on an LLM) — if this has not sunk in, nothing in the rest will stick:
+Before getting into Claude Code specifically, there is a layer of mechanics shared by every chatbot and agentic tool built on an LLM. This part is for everyone — including readers who do not use Claude. You can read it just to understand how an AI chat or an agentic AI actually works; and if it has not sunk in, everything further down about how to use Claude Code will be very hard to follow.
 
-When you chat with a chatbot or an agentic tool, you start by laying out the problem you are facing, what you want to do, introducing things... In my own use it usually takes several turns of back-and-forth before the model's responses feel like they are actually tracking the requirement — call it a rough observation, not a mechanical cutoff. Here is the mechanical part: for turn N to "remember" what turns 1→N-1 established, the client has to re-send *the entire turns 1→N-1 conversation back to the model every single turn, so it can reason through them again* — sounds absurd, right? This is the single most important thing about how LLMs work: *they are stateless*. When LLMs first came out, I also excitedly cloned a model to run locally — turn 1 I introduced myself with *"my name is…"*, turn 2 I asked *"do you know who I am?"*, you already know the answer. Digging in, the reveal: you have to send the full prior history for the model to know anything. And fundamentally, with current limits, the total history you can send up tops out around 1M tokens (a **token** is roughly 3–4 characters of English — so 1M tokens is on the order of a few hundred thousand lines of code) — this is why you have to organize that structure appropriately to serve bigger problems.
+### How AI works at the basic level
+
+When you chat with a chatbot or an agentic tool, you start by laying out the problem you are facing, what you want to do, introducing things... In my own use it usually takes several turns of back-and-forth before the model's responses feel like they are actually tracking the requirement — call it a rough observation, not a mechanical cutoff. Here is the mechanical part: for turn N to "remember" what turns 1→N-1 established, the client has to re-send *the entire turns 1→N-1 conversation back to the model every single turn, so IT CAN REASON THROUGH THEM ALL OVER AGAIN FROM SCRATCH* — sounds absurd, right? This is the single most important thing about how LLMs work: *they are stateless*. When LLMs first came out, I also excitedly cloned a model to run locally — turn 1 I introduced myself with *"my name is…"*, turn 2 I asked *"do you know who I am?"*, you already know the answer. Digging in, the reveal: you have to send the full prior history for the model to know anything.
+
+Two facts to internalize for the rest of the piece: **context (the conversation re-sent each turn) is a finite resource** — with current limits, the total history you can send up tops out around **1M tokens** (a **token** is roughly 3–4 characters of English; 1M tokens is on the order of a few hundred thousand lines of code) — and **the model is stateless**, with no memory of its own; everything it "knows" inside a session is whatever the client re-sends each turn.
 
 > **A note on tokens.** A token isn't a character, and it isn't quite a word either. It's the unit of text a model's tokenizer splits your input into before the model sees it, and each model's tokenizer splits differently. Take the Vietnamese sentence *"tôi không muốn đọc bài này nữa"* as an example. If you naively split on whitespace, you get 7 "words": `tôi` | `không` | `muốn` | `đọc` | `bài` | `này` | `nữa`. But real tokenizers don't split on whitespace — they use subwords, and a common tokenizer might cut the same sentence into roughly `tôi` | ` không` | ` mu` | `ốn` | ` đ` | `ọc` | ` bài` | ` này` | ` n` | `ữa` — about 10 tokens for a very short sentence. The English equivalent *"I don't want to read this anymore"* usually runs ~8 tokens.
 
-Once it has sunk in, the real question — *"if everything has to be re-sent every turn, what goes in and what does not?"* — shows up on its own. This article is an answer to that question.
+### Everything is about enriching context
 
-This mechanism holds for every chatbot or agentic tool — as long as it runs on an LLM. This article focuses on one popular agentic: **Claude Code**. But the same logic transfers to others — the setup, the usage, and the way context gets organized are fundamentally the same.
+Everything that used to be called *prompt engineering* in the AI-chat era — and that has now been standardized in the agentic era as **memory, skills, rules, agents, hooks**... — is in the end the same exercise: improve that context, so each turn lands with more of the right information loaded. Given a better context, an AI Model (gpt5, minimax2.7, claude opus 4.6, Qwen 3.5...) reasoning over it **MIGHT** return a better result.
 
-Most of us use Claude in a very natural way: state the problem, and let it find its own way through. That is not wrong. Claude was built for open-ended, ambiguous, unstructured problems — and most of the time it does a fine job.
+Why *MIGHT*? If you have ever used an open-source model in the ~30B-parameter range or below, you already understand: no matter how carefully you prepare the context, getting the thing to reason and produce something *relevant* is already a small miracle, never mind smart or sensible. That *MIGHT* is also the antidote to anger when claude opus or gpt5.x occasionally goes off the rails.
 
-Precisely because it is smart enough, we slip into the habit of handing things off.
+Interacting with an AI (chat or agentic) is, at the bottom, just *the client sending a prompt (with context) up, and the server reasoning and sending the result back* (more on this in the next subsection). I say this so we can separate one thing clearly: **enriching context is something a user can do — but it is not GUARANTEED to make the final quality better**. It is, however, the most feasible thing a regular user can do, because the other two paths are blocked:
 
-Bug comes up, throw the bug in. Feature comes up, throw the spec in. Unfamiliar repo, tell it to read and figure it out. A few clarifying turns later, the requirement is aligned. When it does something clever, we grow more convinced that if we just describe the problem well enough, the model will take care of the rest.
+- **Modifying enterprise models** (OpenAI's gpt5, Anthropic's sonnet/opus) is *impossible* — they are closed solutions. In exchange, they are excellent.
+- **Working with open-source models directly** (deepseek, Qwen...) is *hard* — most of us are not AI engineers, and we do not have the hardware to pull, POC, train, or fine-tune.
 
-That way of working is fine — until you need consistency.
+One impossible, one hard. What is left is enriching context.
 
-When you want a situation it once handled well to keep being handled well. When you want the same kind of task today, next week, or next month to come out at the same quality. When you want the experience from prior sessions to stay as reusable capability, instead of vanishing and being re-invented in the next one.
+At which point a fair question shows up: *"OK, can I just wait for the context window to keep getting bigger?"* There is a basic fact most casual users do not know: where the **1M** number actually comes from, and why it is not just bumped to 1TB. The condensed answer is in the appendix [Three facts about LLM runtime](./docs/llm-mechanics/three-llm-runtime-facts.md) — with the deeper material in [self-attention](./docs/llm-mechanics/self-attention.md) and [why context matters](./docs/llm-mechanics/why-context-matters.md). Read the appendix — or, if you would rather not, take it on faith that **1M is a *mechanical* ceiling, not a knob the vendor chose**.
 
-That is when the limits start to show.
+### Chatbox and agentic, fundamentally the same
 
-You realize you have not built a reliable system. You have just been tapping the model's intelligence in the moment. Intelligence (mechanically: *input → model inference → output*) is fine on its own — but if you are using it to *write a program*, that intelligence has to be stable, structured, consistent across every module in the system, and aligned to convention. Code does not escape this: I have yet to see a program that did not eventually reduce to shared coding standards, explicit business logic, and concrete constraints. If all you want is free-wheeling research or chat, none of this applies.
+While we are here, a quick explanation of how AI chatbox and AI agentic tools run, so it is clear they are fundamentally the same. To see it, you need the **client – server** model.
+
+- **The client of an AI chatbox** is the ChatGPT, Claude, etc. application (these days they ship with tools and have themselves become agentic; treat the older versions, where asking gets you a reply but no auto-search, no command running).
+- **The client of an AI agentic** is Codex, Claude Code, Antigravity, OpenClaw, etc. The difference between the two is the ability to call tools that already live on your machine: launch Chrome, open an app, edit a file...
+
+Before agentic tools existed, the formula was `chatbox + user (human) = agentic`. After the server returned a result, the user was the one carrying out whatever the server had instructed. Today the agentic does it for you, via tool calls. Mechanically, that is all it is.
+
+**Server**: the model runs here. It accepts requests from the client, processes them, and returns a result. The processing itself is the same for chatbox and agentic. The difference: agentic requests carry a *list of tools*; the server, beyond text, can also return *commands the client should execute* — and the result of those tool calls is sent back up on the next turn.
+
+I am a developer, and I do not love accepting things that "just work," so here is one fact I love to POC: when you use a ready-made ecosystem (Claude Code, Antigravity), everything is hidden from the end user so it feels like magic. Try pairing a client with a model that has **no tool-calling capability** — it is as helpless as the old chatbox. Conversely, a model that cannot return instructions for the client to call tools is just as helpless — the way early LLMs were, when they could only generate text.
+
+While we are at it, I would suggest setting up your own POC environment: **client (Claude Code) → proxy (any one will do) → server**. The client calls through the proxy, the proxy calls the server, and you capture the requests in both directions to see what is actually being sent. Most of the intuition in this article will arrive on its own after that exercise.
+
+### Now into Claude Code specifically
+
+Everything above is the universal problem of using AI today, and it is mostly **the finiteness of context**. The rest of this guide is the concrete version: how to steer that context skillfully so the answers come back better — through one specific client, **Claude Code**.
+
+This is not a *best practice*; it is personal experience, and none of it is gospel. **What is gospel is the section above.**
 
 This repo exists for one reason: **to help you give Claude enough durable structure that the intelligent, exploratory parts of the model land somewhere predictable**, instead of re-deriving the same facts about your codebase session after session.
 
@@ -34,7 +56,7 @@ From there, choosing the right model for each task becomes a deliberate knob. Yo
 
 - **Claude Code users who have logged enough hours to recognize at least one of the four symptoms in [Section 1](#1-delegate-dont-dictate-silently-breaks-in-long-sessions)** — session anxiety, cramming, workflow superstition, the `CLAUDE.md` graveyard. If none of those resonate yet, bookmark this and come back after a few more weeks of real use. The guide will not land before the pain does.
 - **Developers who want to understand *why* long sessions break, not just collect tips.** The argument leans on mechanics — context window, compaction, attention dilution — and expects you to read like an engineer, not a recipe-follower.
-- **People willing to read a `.claude/` directory like source code.** This is not a framework to install. Section 6 argues that the real deliverable is being able to open any Claude Code setup — yours or someone else's — and see what is actually happening underneath.
+- **People willing to read a `.claude/` directory like source code.** This is not a framework to install. Section 5 argues that the real deliverable is being able to open any Claude Code setup — yours or someone else's — and see what is actually happening underneath.
 - **Readers who have tried many frameworks and no longer know why any of them actually work.** If you have collected skills, commands, and agents from half a dozen repos and the whole stack now feels like a black box that sometimes does the right thing, this guide is for you. The goal is not another framework on top — it is the mechanical vocabulary to pop the hood on the ones you already have and tell which parts are doing real work.
 
 This is **not** the right starting point if you are brand-new to Claude Code (you need the pain first), or if you came hunting for a framework to adopt off-the-shelf (the guide deliberately does not ship one — it teaches you to grade the ones that already exist).
@@ -45,11 +67,12 @@ This is **not** the right starting point if you are brand-new to Claude Code (yo
 
 1. [**"Delegate, don't dictate" silently breaks in long sessions**](#1-delegate-dont-dictate-silently-breaks-in-long-sessions) — the failure mode this guide exists to fix: how `/compact` and fresh sessions both erode the context you carefully gave, and the four symptoms every long-time Claude Code user recognizes.
 2. [**See what Claude is actually carrying**](#2-see-what-claude-is-actually-carrying) — `/memory` and `/context`, the two diagnostic commands that turn *"by feel"* into something measurable, plus the thesis line: *Claude Code inconsistency is usually a context-architecture problem, not a model-intelligence problem.*
-3. [**Why bigger models will not save you**](#3-why-bigger-models-will-not-save-you--three-facts-about-llm-runtime) — three facts about LLM runtime (finite window, stateless re-sends, self-attention dilution) that explain why the problem scales with your ambition, not with the model.
-4. [**The primitives**](#4-the-primitives--durable-places-outside-compact) — six durable places to put knowledge that `/compact` cannot rewrite: CLAUDE.md, rules, skills, hooks, memory, subagents.
-5. [**Placement mechanics**](#5-placement--three-axes-two-triggers-one-decision-tree) — three axes of cost, description-vs-body trust boundary, explicit-vs-implicit triggers, rule-content placement, skills-as-templates, and a decision tree for where each piece of knowledge lives.
-6. [**Reading any framework on your own**](#6-reading-any-framework-on-your-own) — the muscle this guide builds: you can now open any `.claude/` directory and see the mechanics doing real work, not magic.
-7. [**What is next**](#7-what-is-next--and-what-this-repo-is-not) — coming-soon docs, scope boundaries, and a call for contributors on a live context dashboard.
+3. [**The primitives**](#3-the-primitives--durable-places-outside-compact) — six durable places to put knowledge that `/compact` cannot rewrite: CLAUDE.md, rules, skills, hooks, memory, subagents.
+4. [**Placement mechanics**](#4-placement--three-axes-two-triggers-one-decision-tree) — three axes of cost, description-vs-body trust boundary, explicit-vs-implicit triggers, rule-content placement, skills-as-templates, and a decision tree for where each piece of knowledge lives.
+5. [**Reading any framework on your own**](#5-reading-any-framework-on-your-own) — the muscle this guide builds: you can now open any `.claude/` directory and see the mechanics doing real work, not magic.
+6. [**What is next**](#6-what-is-next--and-what-this-repo-is-not) — coming-soon docs, scope boundaries, and a call for contributors on a live context dashboard.
+
+> The mechanical question *"why 1M and not 1Tb"* is answered in the appendix [Three facts about LLM runtime](./docs/llm-mechanics/three-llm-runtime-facts.md) — required reading for anyone who has not yet internalized finite-shared windows, stateless re-sends, and self-attention dilution.
 
 Before we look at *how* to organize, it is worth being honest about what breaks when you do not — because that is what most Claude Code sessions look like today.
 
@@ -154,54 +177,13 @@ The honest relationship between the two commands:
 - **`/context`** is the comprehensive diagnostic view — every category of content currently in (or available to) context, with token cost, drilled down by item. Everything `/memory` shows is a strict subset of what `/context` shows, *plus* tokens, *plus* skills, agents, MCP tools, and the Messages / Free-space / Autocompact-buffer accounting.
 - **`/memory`** is a memory-file editor. It lists the same `CLAUDE.md`, rules, and auto-memory files, but its job is to let you *edit* them — select a file and it opens in your editor, or toggle auto-memory on/off. For diagnosis, `/context` is strictly more informative; `/memory` wins when you want to fix a file you just spotted.
 
-`/memory` and `/context` tell you *what* Claude is carrying and *what it costs*. What they cannot tell you is why shrinking that cost matters, or why bigger context windows are not a substitute for shrinking it. Both questions have the same answer — three facts about how LLMs actually run at inference time.
-
----
-
-## 3. Why bigger models will not save you — three facts about LLM runtime
-
-You do not need deep ML to place knowledge well in Claude Code. You need three facts, in just-enough form. Every placement decision in the rest of this guide flows from them.
-
-### Fact 1 — The context window is finite, and shared
-
-Opus 4.7 tops out at 1M tokens. That sounds enormous (huge to anyone used to [LLM session sizes](./docs/llm-mechanics/self-attention.md), but a rounding error next to RAM or disk capacity — if context ever reached TB territory like memory does, we'd all be farming for a living by now); it is not, because the budget is **shared**, not dedicated to your question. Everything below competes for the same 1M on every single turn:
-
-- Claude Code's own system prompt
-- Every tool schema — built-in, MCP, agent definitions
-- Every `CLAUDE.md`, every always-loaded rule, every skill description, `MEMORY.md`
-- The entire prior conversation, every tool result, every file Claude has read
-
-A single read of a 2000-line source file can eat 30–50k tokens. Ten such reads in a long debugging session and you have burned 5% of the window before doing any actual work. "1M tokens" is the ceiling, not the workspace — the usable workspace shrinks every minute of a session.
-
-### Fact 2 — Every request re-sends the entire conversation
-
-A finite window would be manageable if the model kept state between turns. It does not. LLM inference is **stateless** — the client re-sends the full prior conversation, all loaded `CLAUDE.md`, all rules, all skill descriptions, all tool definitions, **every single turn**, from turn 1.
-
-A practical consequence: a 500-line addition to `CLAUDE.md` is not a one-time cost. It is a per-turn tax, multiplied by every turn of every future session. Prompt caching softens the blow (0.1× for matching prefixes within a 5-minute TTL), but caching only helps if you do not invalidate the prefix — and editing `CLAUDE.md` mid-session invalidates everything downstream.
-
-### Fact 3 — Bigger context does not mean better focus
-
-Paying per-turn would also be manageable if every token you paid for worked equally hard. It does not. Self-attention — the mechanism the model uses to decide which tokens matter — gives every token a weight, and **those weights must sum to a fixed total**. Every additional irrelevant token reduces the weight available for the relevant ones. More context makes the signal thinner, not sharper. Combined with the empirically measured "lost in the middle" effect (info buried between long prefixes and long suffixes gets weighted less), a prompt twice as long can be *less* effective than a prompt half the size, if the extra content is noise.
-
-> **Deep dive:** [`docs/llm-mechanics/self-attention.md`](./docs/llm-mechanics/self-attention.md) animates why this is mechanical, not a bug a bigger window fixes. [`docs/llm-mechanics/why-context-matters.md`](./docs/llm-mechanics/why-context-matters.md) expands all three facts with examples of what each one costs you in practice.
-
-### The trajectory has a floor
-
-These three facts do not get fixed by a bigger window. They compound with it. Models keep getting smarter; context windows keep growing — 8k → 200k → 1M → whatever comes next. Engineering wins like prompt caching, path-scoped rules, compaction, and subagent isolation all push the ceiling up. But they do not change the *shape* of the ceiling: **the problem scales with your ambition, not with the model.** The day a 10M-token window arrives, you will find yourself wanting to pack 20M tokens of project context into it.
-
-### Reasoning is not the same as durable knowledge
-
-One more fact, this one observational. I once applied a Terraform config that failed. With no hand-holding, Claude inferred the URL might be wrong, went looking for the provider's source, could not find it locally (the provider was named against convention), web-searched the closest match, found the GitHub repo, read the source, and discovered a trailing `/` that should not be there. Mind-blowing. And of course I did not dare close that session — surely that expertise lived *somewhere*. Sure enough, N turns of unrelated work later, a similar issue cropped up and Claude had to re-derive half of it from scratch.
-
-A model smart enough to *derive* the right answer once will still re-derive it, imperfectly, every time its context drifts or resets. In a long session, attention rot eventually buries the answer. In a fresh session, it is never there to begin with.
-
-> **Deep dive:** [`docs/llm-mechanics/delegation-ceiling.md`](./docs/llm-mechanics/delegation-ceiling.md) for the full war story and why better models alone do not close the gap.
+`/memory` and `/context` tell you *what* Claude is carrying and *what it costs*. What they do not tell you is why shrinking that cost matters, or why bigger context windows are not a substitute for shrinking it. Both questions are answered mechanically in the appendix [Three facts about LLM runtime](./docs/llm-mechanics/three-llm-runtime-facts.md) — finite shared window, stateless per-turn re-sends, self-attention dilution. Read it if you need convincing; skip if you already feel them.
 
 ### In sum: mechanism, not intelligence
 
-After three sections, time to close this out before going further. Because if you have reached this point and still do not see *why reorganizing how you use Claude is important and necessary*, we should stop here — either I am wrong (not a chance), or you are.
+This is the place to close out the foundation before going further. Because if you have reached this point and still do not see *why reorganizing how you use Claude is important and necessary*, we should stop here — either I am wrong (not a chance), or you are.
 
-If there is one sentence to summarize the first three sections: the problem is not how smart Claude is — it is the *mechanism* of how LLMs run at inference time. Section 1 gave you four symptoms of not knowing what Claude remembers. Section 2 gave you two commands to measure that. Section 3 gave you three facts about why a bigger model or a bigger window does not fix the root. Taken together, they change your **expectations** about Claude "remembering" work: it has a context window where everything you load competes, reloaded from scratch on every turn, and silently summarized when the limit is reached.
+If there is one sentence to summarize: the problem is not how smart Claude is — it is the *mechanism* of how LLMs run at inference time. Section 1 gave you four symptoms of not knowing what Claude remembers. Section 2 gave you two commands to measure that. The three-facts appendix tells you why a bigger model or a bigger window does not fix the root. Taken together, they change your **expectations** about Claude "remembering" work: it has a context window where everything you load competes, reloaded from scratch on every turn, and silently summarized when the limit is reached.
 
 Under those conditions, *organizing what must be remembered, where to put it, and when to re-inject it* is no longer a detail optimization — it is the baseline requirement for long sessions not to break.
 
@@ -211,7 +193,7 @@ One honest thing to add: this guide exists because *I* needed to answer *my own*
 
 ---
 
-## 4. The primitives — durable places outside `/compact`
+## 3. The primitives — durable places outside `/compact`
 
 The six primitives each answer a different version of the same question: *where do I put this so it survives `/compact`, and so it re-enters context on exactly the turns that need it?*
 
@@ -254,7 +236,7 @@ Naming the six primitives is the easy half. The hard half is knowing *which* one
 
 ---
 
-## 5. Placement — three axes, two triggers, one decision tree
+## 4. Placement — three axes, two triggers, one decision tree
 
 Placement decisions get much easier once you internalize that these primitives live on **three different axes**, not one.
 
@@ -383,7 +365,7 @@ This is the cleanest mechanical answer to the `/compact` problem from Section 1.
 
 **Why planning gets outsized leverage.** Look at GSD's top-level flow — *plan → execute → verify* — and notice planning gets the most agents, the most gates, the most iteration (discuss-phase, plan-checker, revision loops). Execution, by comparison, is nearly mechanical: read the plan, apply it. That asymmetry is deliberate. Planning is where the expensive thinking happens — research, tradeoff analysis, dependency ordering — and the *output* is a compact, re-readable artifact. Once that artifact exists, execution is deterministic enough to run on a weaker, cheaper model without drift, because the hard thinking already happened on disk.
 
-Vibe coding inverts this. With no plan artifact, every turn of execution doubles as re-planning — decisions made at turn 10 get silently re-interpreted at turn 40, research done once gets done again. Execution intelligence has to carry the whole load, which works while the model is strong and the context is fresh, and starts breaking the moment either condition fails. The generalization: **the more of your thinking lives in durable artifacts, the less you depend on the model holding it in attention.** That is the real reason Section 3's facts about attention and window bite hardest in vibe-code mode — there is nowhere else for the thinking to live.
+Vibe coding inverts this. With no plan artifact, every turn of execution doubles as re-planning — decisions made at turn 10 get silently re-interpreted at turn 40, research done once gets done again. Execution intelligence has to carry the whole load, which works while the model is strong and the context is fresh, and starts breaking the moment either condition fails. The generalization: **the more of your thinking lives in durable artifacts, the less you depend on the model holding it in attention.** That is the real reason the [appendix's](./docs/llm-mechanics/three-llm-runtime-facts.md) facts about attention and window bite hardest in vibe-code mode — there is nowhere else for the thinking to live.
 
 This reframes what it costs to adopt a framework. A vibe-coder with no plan habit who reaches for GSD pays two costs stacked: **(1) the habit shift** — learning to plan before executing, externalize decisions, think in phases — and **(2) the framework's surface** — its commands, conventions, artifact names, agent roles. Only the second is the framework's own complexity; the first is a workflow change the framework cannot teach, only reward. Someone who already keeps a hand-written `./PLAN.md` pays only cost (2), which is shallow — they are just learning where the framework expects their existing discipline to live. This is one plausible reading of why people try a framework, bounce off, and conclude *"frameworks do not work for me"* — they were paying both costs at once and misattributed the friction to the tool. One reasonable sequence is to build the planning habit first on a hand-written `./PLAN.md`, then graduate to a framework once it feels automatic — that way you pay cost (2) on top of a habit already there, not on top of a workflow rearranging underneath you. The other defensible path is to let the framework itself be the trainer: its gates (`plan-phase` before `execute-phase`, plan-checker, decision tracking) drill the shape every session, which works if you can tolerate paying both costs at once and resist free-forming around the gates when they feel inconvenient. Neither path is universal; the point is knowing which cost you are currently paying, and not mistaking workflow change for framework complexity.
 
@@ -427,7 +409,7 @@ If nothing matches, you probably do not need to persist it. The tree is the mini
 
 ---
 
-## 6. Reading any framework on your own
+## 5. Reading any framework on your own
 
 Everything in this guide has been building one muscle: the ability to look at a Claude Code setup — yours or somebody else's — and see what is actually happening underneath.
 
@@ -444,9 +426,9 @@ One corollary about *when* a framework is worth reaching for at all. A framework
 
 The simple tell: would you write a runbook for this kind of work? If yes, a framework — or at minimum a bespoke skill + rule — earns its keep. If no, you are buying rails a task does not need, and the honest move is a good prompt, not a pipeline.
 
-The same gate fixes a nastier in-session reflex: **panic-cramming**. When Claude hits an edge case and you fix it, the instinct is to shove the lesson into `CLAUDE.md` in case it recurs — Section 1's third symptom, the graveyard. The honest question is identical: *will this recur?* If no, the fix lives in the diff; the model does not need to carry the story forward, and codifying a one-off is paying a per-turn tax for a single event that will not happen again. If yes, the edge case deserves a durable home — *where* exactly is Section 5's decision, not this paragraph's — but the gate for asking at all is "is this a shape, or is this a single incident?" Most graveyard bullets exist because someone skipped the gate and codified one-offs as rules.
+The same gate fixes a nastier in-session reflex: **panic-cramming**. When Claude hits an edge case and you fix it, the instinct is to shove the lesson into `CLAUDE.md` in case it recurs — Section 1's third symptom, the graveyard. The honest question is identical: *will this recur?* If no, the fix lives in the diff; the model does not need to carry the story forward, and codifying a one-off is paying a per-turn tax for a single event that will not happen again. If yes, the edge case deserves a durable home — *where* exactly is Section 4's decision, not this paragraph's — but the gate for asking at all is "is this a shape, or is this a single incident?" Most graveyard bullets exist because someone skipped the gate and codified one-offs as rules.
 
-One practical corollary if you do adopt a framework: **invoke its `/commands` and skills explicitly, at the step each one was designed for**. A framework cannot hook everything — hooks only fire on file events and tool calls, not on *intent*, so whatever the author could not wire to a deterministic trigger lives behind an explicit entry point. Implicit auto-triggering is the failure-prone path from Section 5: descriptions compete for Axis-1 attention every turn, and `/compact` silently drops them. The reliable way to get the behavior the framework was designed to produce is to call the matching command at the matching step, the way the author wired the pipeline — `get-shit-done`'s `discuss → plan → execute → verify → ship` loop is a clean example: each phase is its own slash command, and skipping one by free-form chat means that phase's guard rails never load. Free-form your way through the same task and you slide outside the rails without noticing — the framework's invariants never load, and the session falls back to whatever is in base `CLAUDE.md`. A framework is not a background service; it is a set of entry points you have to actually use.
+One practical corollary if you do adopt a framework: **invoke its `/commands` and skills explicitly, at the step each one was designed for**. A framework cannot hook everything — hooks only fire on file events and tool calls, not on *intent*, so whatever the author could not wire to a deterministic trigger lives behind an explicit entry point. Implicit auto-triggering is the failure-prone path from Section 4: descriptions compete for Axis-1 attention every turn, and `/compact` silently drops them. The reliable way to get the behavior the framework was designed to produce is to call the matching command at the matching step, the way the author wired the pipeline — `get-shit-done`'s `discuss → plan → execute → verify → ship` loop is a clean example: each phase is its own slash command, and skipping one by free-form chat means that phase's guard rails never load. Free-form your way through the same task and you slide outside the rails without noticing — the framework's invariants never load, and the session falls back to whatever is in base `CLAUDE.md`. A framework is not a background service; it is a set of entry points you have to actually use.
 
 The shift goes further than framework-reading. Once you know every prompt competes for a shared attention budget, every `CLAUDE.md` line is a per-turn tax, and `/compact` is paraphrase rather than forgiveness, it becomes harder to hand everything to the model and hope — with Claude Code today, with whatever agentic tool replaces it tomorrow. Shallow prompts and vague intent were always bets; you now know the odds. You do not have to stop delegating. You do have to stop pretending the delegation happens in a vacuum. **You are the architect of what the model sees; the model is the mind that works on what you hand it.** The collaboration breaks down exactly when those two roles get confused.
 
@@ -454,7 +436,7 @@ From here, you are reading on your own.
 
 ---
 
-## 7. What is next — and what this repo is not
+## 6. What is next — and what this repo is not
 
 ### Coming soon
 
