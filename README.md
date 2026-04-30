@@ -11,7 +11,7 @@ Before getting into Claude Code specifically, there is a layer of mechanics shar
 - **turn** — one back-and-forth: you send a prompt → the AI replies.
 - **chatbox** — a pure chat UI with no external tool calls (ChatGPT web, Claude.ai web).
 - **agentic tool** — an AI client that can call tools on your machine: read/write files, run shell, open Chrome... (Claude Code, Antigravity, Codex, OpenClaw).
-- **client / server** — explained in detail in the section *Chatbox and agentic, fundamentally the same* below.
+- **client / server** — the client is the app running on your machine (chatbox or agentic tool); the server is where the model actually runs. Detailed in the section *Chatbox and agentic*.
 
 ### How AI works at the basic level
 

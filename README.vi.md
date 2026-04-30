@@ -11,7 +11,7 @@ Trước khi nói tới Claude Code cụ thể, có một lớp nền chung cho 
 - **turn** — một lượt qua-lại: bạn gửi prompt → AI trả lời.
 - **chatbox** — UI chat thuần, không gọi tool ngoài (ChatGPT web, Claude.ai web).
 - **agentic tool** — client AI có thể gọi tool trên máy bạn: đọc/sửa file, gọi shell, mở Chrome... (Claude Code, Antigravity, Codex, OpenClaw).
-- **client / server** — chi tiết ở section *Chatbox và agentic, về bản chất là một* phía dưới.
+- **client / server** — client là ứng dụng trên máy bạn (chatbox hoặc agentic tool); server là nơi model thực sự chạy. Chi tiết ở section *Chatbox và agentic*.
 
 ### Cách AI hoạt động ở mức cơ bản
 
