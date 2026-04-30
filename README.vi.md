@@ -1,6 +1,6 @@
 # Claude Code, đúng cách
 
-*[English](./README.md) · **Tiếng Việt***
+[🇺🇸 English](./README.md) · **🇻🇳 Tiếng Việt**
 
 Trước khi nói tới Claude Code cụ thể, có một lớp nền chung cho mọi chatbot và agentic tool dựa trên LLM. Phần này dành cho cả người không dùng Claude — bạn có thể đọc để hiểu cách một chat AI hay Agentic AI hoạt động và Nếu chưa thấm, mọi thứ phía sau liên quan tới cách dùng Claude code sẽ rất khó để hiểu.
 

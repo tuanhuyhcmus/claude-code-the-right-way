@@ -1,5 +1,7 @@
 # Claude Code, the right way
 
+**🇺🇸 English** · [🇻🇳 Tiếng Việt](./README.vi.md)
+
 Before getting into Claude Code specifically, there is a layer of mechanics shared by every chatbot and agentic tool built on an LLM. This part is for everyone — including readers who do not use Claude. You can read it just to understand how an AI chat or an agentic AI actually works; and if it has not sunk in, everything further down about how to use Claude Code will be very hard to follow.
 
 ### How AI works at the basic level
