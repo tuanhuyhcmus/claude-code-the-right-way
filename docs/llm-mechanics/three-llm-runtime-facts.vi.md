@@ -1,6 +1,6 @@
 # Vì sao model to hơn không cứu được bạn — ba fact về LLM runtime
 
-*Phụ lục cho [README.vi.md](../../README.vi.md). Câu trả lời cơ học cho câu hỏi "vì sao trần context là 1M chứ không phải 1Tb cho xong" — và vì sao một window to hơn cũng không thay đổi được hình dạng của vấn đề.*
+*Phụ lục cho [README.vi.md](../../README.vi.md). Câu trả lời cơ học cho câu hỏi "vì sao trần context là 1M chứ không phải 1T cho xong" — và vì sao một window to hơn cũng không thay đổi được hình dạng của vấn đề.*
 
 Không cần hiểu sâu ML để đặt kiến thức đúng chỗ trong Claude Code. Bạn chỉ cần ba fact, ở dạng vừa đủ. Mọi quyết định placement trong README đều bắt nguồn từ ba fact này.
 

@@ -1,6 +1,6 @@
 # Why bigger models will not save you — three facts about LLM runtime
 
-*Appendix to [README.md](../../README.md). The mechanical answer to "why is the ceiling 1M and not 1Tb" — and why a bigger window does not change the shape of the problem.*
+*Appendix to [README.md](../../README.md). The mechanical answer to "why is the ceiling 1M and not 1T" — and why a bigger window does not change the shape of the problem.*
 
 You do not need deep ML to place knowledge well in Claude Code. You need three facts, in just-enough form. Every placement decision in the README flows from them.
 
