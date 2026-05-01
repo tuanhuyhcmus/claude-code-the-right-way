@@ -79,7 +79,7 @@ Từ đó, việc chọn model phù hợp cho mỗi task trở thành một knob
 
 ### 2.1 Ai nên đọc
 
-- **Người dùng Claude Code đã đủ giờ bay để nhận ra ít nhất một trong bốn triệu chứng ở [Mục 2.3](#23-delegate-dont-dictate-âm-thầm-đổ-vỡ-trong-session-dài)** — session anxiety, nhồi nhét, mê tín workflow, nghĩa địa `CLAUDE.md`. Nếu chưa cái nào đánh trúng, bookmark lại và quay lại sau vài tuần dùng thật. Hướng dẫn sẽ không đáp xuống trước khi cơn đau xuất hiện.
+- **Người dùng Claude Code đã nhận ra ít nhất một trong bốn triệu chứng ở [Mục 2.3](#23-delegate-dont-dictate-âm-thầm-đổ-vỡ-trong-session-dài)** — session anxiety, nhồi nhét, mê tín workflow, nghĩa địa `CLAUDE.md`. Nếu chưa cái nào mà bạn gặp phải, bookmark lại và quay lại sau vài tuần dùng thật. Hướng dẫn sẽ không chữa được gì trước khi cơn đau xuất hiện.
 - **Developer muốn hiểu *tại sao* session dài đổ vỡ, không chỉ sưu tập mẹo.** Lập luận dựa trên cơ chế — context window, compaction, attention dilution — và kỳ vọng bạn đọc như một kỹ sư, không phải người đi theo công thức.
 - **Người sẵn sàng đọc một thư mục `.claude/` như đọc source code.** Đây không phải một framework để cài. Mục 3 lập luận rằng thứ thật sự giao được là khả năng mở bất kỳ setup Claude Code nào — của bạn hay của người khác — và thấy cái gì đang thực sự diễn ra bên dưới.
 - **Người đã thử nhiều framework và không còn biết cái nào thực sự work.** Nếu bạn đã gom skill, command, agent từ nửa tá repo và cả stack giờ giống một hộp đen thỉnh thoảng làm đúng, hướng dẫn này dành cho bạn. Mục tiêu không phải thêm một framework nữa trên cùng — mà là vốn từ cơ học để mở nắp capo những cái bạn đã có và biết bộ phận nào đang làm việc thật.
