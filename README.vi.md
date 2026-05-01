@@ -2,7 +2,7 @@
 
 [🇺🇸 English](./README.md) · **🇻🇳 Tiếng Việt**
 
-Trước khi nói tới Claude Code cụ thể, Có 1 sự liên quan rất lớn giữa các công cụ dạng AI chatbox các AI Agentic : chúng điều là ứng dụng được xây dựng xung quanh sức mạnh của LLM,chỉ khác ở 1 số điểm nhỏ ,nhưng những điểm đó đã làm tự động hoá toàn bộ quy trình phát triển phần mềm cũng như cách mà chúng ta xử dụng AI hàng ngày,chi tiết tôi có mô tả phía dưới. 
+Trước khi nói tới Claude Code cụ thể, Có 1 sự liên quan rất lớn giữa các công cụ dạng AI chatbox các AI Agentic : chúng điều là ứng dụng được xây dựng xung quanh sức mạnh của LLM,chỉ khác ở 1 số điểm nhỏ ,nhưng những điểm đó đã làm tự động hoá toàn bộ quy trình phát triển phần mềm cũng như cách mà chúng ta sử dụng AI hàng ngày,chi tiết về sự khác biệt tôi có mô tả phía dưới để đúng với nhịp phân tích của bài viết. 
 Phần này dành cho cả người không dùng Claude — bạn có thể đọc để hiểu cách một chat AI hay Agentic AI hoạt động và Nếu chưa thấm, mọi thứ phía sau liên quan tới cách dùng Claude code sẽ rất khó để hiểu.
 
 ### Thuật ngữ dùng trong bài
