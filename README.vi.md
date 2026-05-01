@@ -64,7 +64,7 @@ Trước kia, khi chưa có agentic, công thức là `chatbox + user (human) = 
 
 Khi dùng các solution có sẵn (Claude Code, Antigravity), mọi thứ đã bị che hết để end-user thấy như ma thuật vì Client xịn và model xịn. Cứ thử pair một client xịn với 1 model chưa xịn xem (vd các model < 30B param) bạn sẽ thấy dù context có tốt đến đâu thì nó vẫn không hoạt động theo cách làm bạn hài lòng. Nhưng nó lại làm bạn thấy rõ vai trò của client và server. Điều đó sẽ giúp ích cho bạn sau này khi đổi client và model thì bạn biết bạn đang đánh đổi những thứ nào.
 
-Nhân tiện, tôi muốn bạn tự setup một môi trường POC: **client (Claude Code) → proxy (cái nào cũng được) → server**. Client gọi qua proxy, proxy gọi đến server, và bạn capture request gửi/nhận để biết nó thực sự làm gì. Phần lớn trực giác trong bài này sẽ tự đến sau buổi POC đó.
+Nhân tiện, tôi muốn bạn tự setup một môi trường POC: **client (Claude Code) → proxy (cái nào cũng được) → server**. Client gọi qua proxy, proxy gọi đến server, và bạn capture request gửi/nhận để biết nó thực sự làm gì. Phần lớn trực giác trong bài này sẽ tự đến sau buổi POC đó. Hướng dẫn từng bước với Docker (CLIProxyAPI + mitmweb): [`docs/poc-client-proxy-server.vi.md`](./docs/poc-client-proxy-server.vi.md).
 
 ## Phần 2 — Claude Code cụ thể
 

@@ -56,7 +56,7 @@ Before agentic tools existed, the formula was `chatbox + user (human) = agentic`
 
 When you use a ready-made solution (Claude Code, Antigravity), everything is hidden from the end user so it feels like magic — because both the client and the model are strong. Try pairing a strong client with a not-yet-strong model (e.g. models under 30B parameters): no matter how good the context is, it will not behave in a way you find satisfying. But it does make the roles of client and server very clear. That clarity helps later: when you swap clients or models, you know exactly what you are trading off.
 
-I would suggest setting up your own POC: **client (Claude Code) → proxy (any one will do) → server**. The client calls through the proxy, the proxy calls the server, and you capture the requests in both directions to see what is actually being sent. Most of the intuition in this article will arrive on its own after that exercise.
+I would suggest setting up your own POC: **client (Claude Code) → proxy (any one will do) → server**. The client calls through the proxy, the proxy calls the server, and you capture the requests in both directions to see what is actually being sent. Most of the intuition in this article will arrive on its own after that exercise. Step-by-step Docker walkthrough (CLIProxyAPI + mitmweb): [`docs/poc-client-proxy-server.md`](./docs/poc-client-proxy-server.md).
 
 ---
 
