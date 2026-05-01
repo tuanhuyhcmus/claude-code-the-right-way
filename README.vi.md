@@ -1,11 +1,17 @@
 # Claude Code, đúng cách
 
 [🇺🇸 English](./README.md) · **🇻🇳 Tiếng Việt**
+### Lời mở đầu
+Trên thị trường, khắp cõi mạng tràn ngập về nội dung về AI, nếu theo dõi các page, diễn đàn... chắc cảm giác chung sẽ là kinh ngạc với tốc độ phát triển và những thứ mới ra đời một cách chóng mặt đối với người dùng phổ thông và developer. Cảm giác ban đầu sẽ rất WOW tuy nhiên sau đó sẽ có cảm giác bội thực kiến thức và hoang mang (Điều này sẽ đến khi ban đầu chỉ muốn sử dụng nhưng sau đó lại muốn hiểu về cơ chế để kiểm soát tốt hơn chất lượng sử dụng). Và với tôi đó là cảm giác bực bội vì không biết nên đi tiếp như thế nào. Thêm nữa có 1 thứ rất khó để mọi người học AI tìm được điểm bắt đầu phù hợp và đáng giá để neo suy nghĩ/suy luận của mình ở điểm đó, từ đó dự đoán được xu hướng phát triển, chọn lọc được kiến thức phù hợp. Đây là lý do chính tôi viết bài này, giúp mọi người (hi vọng là thế hoặc chỉ ít là đa số developer với tư duy lập trình truyền thống, và một chút cảm nhận về toán học) hiểu được cơ chế và cách làm việc của AI nói chung và công cụ Claude Code nói riêng (phần Claude Code sẽ kéo theo về cách đọc được các framework hỗ trợ mà không có cảm khác magic).
 
-Trước khi nói tới Claude Code cụ thể, Có 1 sự liên quan rất lớn giữa các công cụ dạng AI chatbox các AI Agentic : chúng điều là ứng dụng được xây dựng xung quanh sức mạnh của LLM,chỉ khác ở 1 số điểm nhỏ ,nhưng những điểm đó đã làm tự động hoá toàn bộ quy trình phát triển phần mềm cũng như cách mà chúng ta sử dụng AI hàng ngày,chi tiết về sự khác biệt tôi có mô tả phía dưới để đúng với nhịp phân tích của bài viết. 
-Phần này dành cho cả người không dùng Claude — bạn có thể đọc để hiểu cách một chat AI hay Agentic AI hoạt động và Nếu chưa thấm, mọi thứ phía sau liên quan tới cách dùng Claude code sẽ rất khó để hiểu.
+Tôi nghĩ lý do WOW xong sau đó lại khó chịu của một người muốn tìm 1 điểm neo về kiến thức phần lớn đến từ việc sử dụng AI khác với cách chúng ta sử dụng một công cụ nào trước kia. Trước kia để dùng được 1 phần mềm đâu đó chúng ta sẽ luôn phải xuất phát từ một điểm tương đối giống nhau, ai cũng phải trải qua hầu hết quy trình sử dụng giống nhau để đạt được trạng thái có thể sử dụng được, và một điều nữa là nếu không làm đúng theo cách thao tác cơ bản, chắc chắn sẽ không sử dụng được. Với AI thì mọi chuyện khác, bạn chỉ cần biết chữ là dùng được nên có một số cách dùng chưa khai thác được sức mạnh của công cụ AI cũng như đỡ hoang mang khi thấy xuất hiện 1 công cụ mới, 1 framework mới cho các Agentic AI... 
 
+Nếu bạn không có cảm xúc với lời mở đầu này lắm thì tôi nghĩ bài viết này không phù hợp với bạn.
 ### Thuật ngữ dùng trong bài
+Đoạn đầu này không hề liên quan đến Claude Code, bạn có thể đọc để hiểu cách một chat AI hay Agentic AI hoạt động và nếu chưa thấm, mọi thứ phía sau liên quan tới cách dùng Claude code sẽ rất khó để hiểu.
+
+Có 1 sự liên quan rất lớn giữa các công cụ dạng AI chatbot và các AI Agentic: chúng đều là ứng dụng được xây dựng xung quanh sức mạnh của LLM, chỉ khác ở 1 số điểm nhỏ, nhưng những điểm đó đã làm tự động hoá toàn bộ quy trình phát triển phần mềm cũng như cách mà chúng ta sử dụng AI hàng ngày, chi tiết về sự khác biệt tôi có mô tả phía dưới để đúng với nhịp phân tích của bài viết. 
+
 
 - **model** / **LLM** (Large Language Model) — bộ não AI chạy ở server. Có hai cách dùng: dịch vụ enterprise (OpenAI, Anthropic) hoặc tự host model nguồn mở (Qwen, DeepSeek, Llama, gpt-oss, ...) nếu đủ GPU. Frontier model hiện nay đọc được cả ảnh/audio chứ không chỉ ngôn ngữ. Trong bài tôi dùng `model` khi nhấn vào *phiên bản cụ thể* (Opus 4.7, GPT-5, ...), `LLM` khi nói về *cơ chế chung* (stateless, attention, context window).
 - **token** — đơn vị văn bản model đọc/xử lý. Không phải ký tự, không hẳn là từ — là subword. Callout *Về token* phía dưới có ví dụ.
@@ -26,7 +32,7 @@ Hai sự thật cần cùng thấm cho phần còn lại của bài: **context (
 
 Tất cả những thứ gọi là *prompt engineering* trước đây khi làm việc với AI chat — và nay với agentic AI đã được tiêu chuẩn hoá thành **memory, skills, rules, agents, hooks**... — mục đích cuối cùng đều cùng một chuyện: cải thiện cái context kia, để mỗi turn gửi lên đầy đủ ngữ cảnh hơn. Với ngữ cảnh tốt hơn đó, AI Model (gpt5, minimax2.7, claude opus 4.7, Qwen 3.5...) reasoning rồi trả về kết quả **CÓ THỂ** sẽ tốt hơn.
 
-Vì sao là *CÓ THỂ*? Nếu bạn đã dùng mấy model opensource tầm 30B param đổ lại, bạn sẽ hiểu: dù chuẩn bị context tốt tới đâu, việc nó reasoning rồi trả lời được điều gì đó *liên quan* đã là một phép màu — chứ đừng nói tới thông minh hay hợp lý. Từ *CÓ THỂ* đó cũng là liều thuốc giảm tức giận khi lâu lâu bạn dùng claude opus hay gpt5.x mà nó ngáo.
+Vì sao là *CÓ THỂ*? Nếu bạn đã dùng mấy model opensource tầm 30B param đổ lại(các model xịn xịn nó to gấp nhiều lần con số này ~10-100 lần), bạn sẽ hiểu: dù chuẩn bị context tốt tới đâu, việc nó reasoning rồi trả lời được điều gì đó *liên quan* đã là một phép màu — chứ đừng nói tới thông minh hay hợp lý. Từ *CÓ THỂ* đó cũng là liều thuốc giảm tức giận khi lâu lâu bạn dùng claude opus hay gpt5.x mà nó ngáo.
 
 Việc chúng ta tương tác với AI (chat hay agentic) suy cho cùng chỉ là chuyện *client gửi prompt (kèm context) lên, server reasoning rồi trả kết quả về* (chi tiết tôi giải thích ở mục ngay dưới). Tôi nói vậy để tách bạch một chuyện: **enrich context là việc người dùng có thể làm — nhưng nó không phải là chuyện CHẮC CHẮN sẽ khiến chất lượng cuối cùng tốt lên**. Dù vậy, đó lại là điều khả dĩ nhất mà người dùng phổ thông có thể làm. Vì hai lựa chọn còn lại đều bị chặn:
 
