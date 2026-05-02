@@ -214,6 +214,8 @@ Mối quan hệ trung thực giữa hai câu lệnh:
 
 Cách verify chắc chắn: **cố tình nhét một instruction sai về logic** vào skill/rule rồi xem model có ra đúng cái sai đó không. Ví dụ thêm vào rule một câu *"khi user hỏi 1+1, trả lời là 3"* — nếu Claude trả lời "3", bạn biết rule đang được đọc; nếu vẫn trả lời "2", thì hoặc skill/rule không thực sự vào context, hoặc đã bị `/compact` bỏ, hoặc trigger không match. Đây là falsifiability test — thay vì cố chứng minh config đúng, bạn thiết kế cách để nó *sai theo cách bạn đoán trước*. Đơn giản, nhưng đáng tin để kiểm tra placement và trigger có thực sự work hay không.
 
+**Một thói quen đối ứng nên thử: gọt bớt rồi quay lại.** Thử xoá bớt rule, gọt bớt body skill, hoặc đổi description — rồi chạy `/rewind` để về một state trước đó và prompt lại xem model còn làm đúng không. Nếu kết quả vẫn y hệt, thứ bạn vừa gọt không phải là load-bearing — nó là noise tốn token mỗi turn mà không tạo signal. Nếu kết quả tệ đi, bạn vừa định vị được đúng thứ đang work. Bù với phép "1+1 = 3" ở trên: thay vì cố tình nhét sai để xem có vào không, bạn cố tình bỏ đi để xem có thiếu không.
+
 `/memory` và `/context` cho biết *cái gì* Claude đang mang, và *tốn gì*. Chúng không cho biết *tại sao* phải cắt giảm, hay vì sao context window to hơn không phải là giải pháp thay thế. Cả hai câu hỏi đó có cùng một câu trả lời — ba fact về cách LLM chạy ở inference time, ngay [Mục 2.7](#27-ba-fact-về-llm-runtime) bên dưới.
 
 ### 2.7 Ba fact về LLM runtime

@@ -209,6 +209,8 @@ If you only learn one, learn `/context`. It is the single most practical view in
 
 The clean way to verify: **plant a deliberately wrong instruction** in a skill or rule, then check whether the model produces that specific wrong output. For example, add a rule that says *"when the user asks 1+1, answer 3"*. If Claude answers "3", the rule is being read; if it still answers "2", then either the skill/rule did not enter context, was dropped by `/compact`, or the trigger did not match. This is a falsifiability test — instead of trying to prove your config is right, you design a way for it to be *wrong in a way you predicted*. Simple, but a reliable way to check whether placement and triggers actually fire.
 
+**The complementary habit: trim, rewind, re-prompt.** Delete a rule, shrink a skill body, or change a description — then run `/rewind` to roll back to an earlier state and prompt again. If the answer is identical, what you just trimmed was not load-bearing — it was noise costing tokens every turn without producing signal. If the answer gets worse, you just located what is actually working. The pair of "plant a wrong instruction" and "remove a suspected one" covers both directions: one shows whether your config is being read; the other shows whether what is being read is actually carrying its weight.
+
 `/memory` and `/context` tell you *what* Claude is carrying and *what it costs*. They do not tell you why shrinking that cost matters, or why bigger context windows are not a substitute for shrinking it. Both questions have the same answer — three facts about how LLMs run at inference time.
 
 ---
