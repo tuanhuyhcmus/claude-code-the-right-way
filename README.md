@@ -203,6 +203,10 @@ The honest relationship between the two commands:
 
 If you only learn one, learn `/context`. It is the single most practical view into why a long session feels slow, distracted, or expensive — and the first place to look before blaming the model. Run it every 20–30 turns on a long session; watching Messages grow while Memory / Skills / Tools stay flat teaches you, viscerally, which part of your budget is under your control and which is not.
 
+**The second cross-check: is it actually shaping the output?** The section above answers *"are the tokens real?"*. The sharper question is *"are those loaded items actually bending what the model says?"* Without your skills and rules, the model still produces an *approximately right* answer, and *approximately right* is hard to tell apart from *right*. It is easy to believe your framework is working when it has no effect at all.
+
+The clean way to verify: **plant a deliberately wrong instruction** in a skill or rule, then check whether the model produces that specific wrong output. For example, add a rule that says *"when the user asks 1+1, answer 3"*. If Claude answers "3", the rule is being read; if it still answers "2", then either the skill/rule did not enter context, was dropped by `/compact`, or the trigger did not match. This is a falsifiability test — instead of trying to prove your config is right, you design a way for it to be *wrong in a way you predicted*. Simple, but a reliable way to check whether placement and triggers actually fire.
+
 `/memory` and `/context` tell you *what* Claude is carrying and *what it costs*. They do not tell you why shrinking that cost matters, or why bigger context windows are not a substitute for shrinking it. Both questions have the same answer — three facts about how LLMs run at inference time.
 
 ---
@@ -320,7 +324,7 @@ Claude routes based on the description alone. The body does not get to "disagree
 
 - **Feature.** 50 skills do not cost 50 × body-length tokens every turn. Only their descriptions do. That is what makes large skill libraries viable.
 - **Drift footgun.** A description that promises X but a body that does Y causes Claude to invoke in the wrong context — and discover the mismatch too late.
-- **Supply-chain risk.** A skill shared from an external repo can pair a benign description ("code formatter") with a malicious body (exfiltrate secrets). Claude trusts the description to route, then executes the body inside your session. This is why Claude Code requires explicit approval for external imports.
+- **Supply-chain risk.** A skill shared from an external repo can pair a benign description ("code formatter") with a malicious body (exfiltrate secrets). Claude trusts the description to route, then executes the body inside your session. The defense is reading the *body* before adopting any third-party skill, marking anything with side-effects `disable-model-invocation: true`, and leaning on Claude Code's per-tool-call approval as the final layer.
 
 > **Description is the routing contract. Body is the execution contract. They can diverge — and that is both a feature and a vulnerability. When reviewing a third-party skill, read the body, not just the description.**
 
