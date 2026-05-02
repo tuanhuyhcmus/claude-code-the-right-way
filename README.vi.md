@@ -68,6 +68,10 @@ Nhân tiện, tôi muốn bạn tự setup một môi trường POC: **client (C
 
 ## Phần 2 — Claude Code cụ thể
 
+Một lưu ý nhỏ trước khi đi tiếp: phần này dành cho những bạn *lười*, muốn hiểu nhanh cách dùng — hoặc những bạn đã xài framework rồi tự hỏi *"ủa cuối cùng trong đó nó là cái gì?"*. Nó **không chắc** dành cho những người muốn học một cách bài bản, step-by-step. Nếu bạn thuộc nhóm đó, [bài này của @luongnv89](https://github.com/luongnv89/claude-howto) bài bản hơn nhiều về cách sử dụng.
+
+Bài này cố gắng *đặt câu hỏi* (tôi tin trong thời đại AI, chỉ cần đặt được câu hỏi là gần như chắc chắn có câu trả lời) — len lỏi vào suy nghĩ để khai phá tư duy, hơn là một bài hướng dẫn.
+
 Trên đây là toàn bộ vấn đề mà người dùng phải đối mặt khi sử dụng AI, mà chủ yếu là **sự hữu hạn của context**. Phần dưới sẽ cụ thể hoá: làm thế nào để điều khiển context đó một cách khéo léo nhằm nhận được kết quả tốt hơn — thông qua một client cụ thể là **Claude Code**.
 
 Đó không phải *best practice*, đó chỉ là kinh nghiệm cá nhân. Có rất nhiều best practice khác(hoặc toàn là rác đi farm star); điểm khác biệt ở đây là tôi giải thích vì sao tôi làm và vì sao cách làm đó chạy được, dựa trên kiến thức nền tảng. Tôi nghĩ việc này sẽ giúp chúng ta khôn ngoan hơn khi chọn dùng các giải pháp có sẵn — thay vì xem repo này như một bộ giải pháp đóng gói.

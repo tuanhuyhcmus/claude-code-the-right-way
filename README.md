@@ -62,6 +62,10 @@ I would suggest setting up your own POC: **client (Claude Code) → proxy (any o
 
 ## Part 2 — Claude Code specifically
 
+A note before going further: this part is for the *lazy* — people who want a quick working understanding — and for those who have already adopted a framework and find themselves wondering *"wait, what is actually in there?"* It is **probably not** the right fit if you want to learn methodically, step by step. If that is you, [@luongnv89's claude-howto](https://github.com/luongnv89/claude-howto) is a much more structured walkthrough of how to use the tool.
+
+This piece tries to *ask the right questions* (in the AI era, I believe that being able to pose the question almost guarantees you can find the answer) — slipping into your thinking to provoke it, rather than acting as a tutorial.
+
 Everything above is the universal problem of using AI today, and it is mostly **the finiteness of context**. The rest of this guide is the concrete version: how to steer that context skillfully so the answers come back better — through one specific client, **Claude Code**.
 
 This is not a *best practice*; it is personal experience, and none of it is gospel. **What is gospel is Part 1.** There are plenty of other best practices out there; what may differ here is that I explain *why* I do it this way and why it works, grounded in the underlying mechanics. I hope that makes us smarter about choosing among ready-made solutions to use, rather than treating this guide as a closed kit.
