@@ -130,6 +130,8 @@ Câu hỏi thật tình phải đặt ra là: *bạn có thực sự biết Clau
 - **Mê tín workflow (workflow superstition).** Claude vừa chạy xong setup integration-test 5 bước: *spin up env → khởi động service phụ thuộc → override local config → chạy test case → in báo cáo dễ đọc*. Mọi thứ khớp. Bạn ghi nhận, với chút khó chịu, rằng bạn rất không muốn làm lại từ đầu — dù về mặt logic, toàn bộ state đó nằm trong file và shell command, không phải trong đầu Claude.
 - **Nghĩa địa `CLAUDE.md` (the `CLAUDE.md` graveyard).** Sau mỗi lần chỉnh đau đớn, bạn nhét thêm một bullet vào `CLAUDE.md`. Sáu tháng sau, file dài 400 dòng và bạn không còn chắc bullet nào đang thực sự kích hoạt, bullet nào mâu thuẫn với bullet nào, hay bullet nào đã hết đúng từ hai sprint trước.
 
+Anthropic cũng quan sát thấy một hiện tượng thú vị từ phía agent: khi các agent cảm thấy ngữ cảnh đang cạn kiệt, họ vội vàng hoàn thành, bỏ qua xác minh, và chọn một giải pháp đơn giản hơn giải pháp tối ưu. Họ gọi đây là **"lo lắng ngữ cảnh"** (context anxiety) — bản sao phía model của bốn triệu chứng phía user ở trên. Cả hai đều xuất phát từ cùng một thứ: window hữu hạn, không đủ chỗ cho mọi thứ cần nhớ.
+
 Cả bốn triệu chứng là cùng một lời than trong bốn hình dạng khác nhau: **bạn không biết Claude đang biết gì, ngoài cảm giác.** Tin tốt là cảm giác đó giải quyết được — mọi thứ Claude đang mang theo đều là file trên đĩa, và hai câu lệnh sẽ chỉ chúng cho bạn.
 
 ---

@@ -123,6 +123,8 @@ The honest question becomes: *do you actually know what Claude is paying attenti
 - **Workflow superstition.** Claude successfully ran your 5-step integration-test setup: *spin up env → start dependent services → override local config → run test cases → print a readable report.* Everything aligned. You note, uncomfortably, that you would really rather not do that again from scratch — even though, logically, all that state lives in files and shell commands, not in Claude's head.
 - **The `CLAUDE.md` graveyard.** After every painful correction, you shove another bullet into `CLAUDE.md`. Six months later the file is 400 lines and you are no longer sure which of those bullets is actually firing, which contradicts which, or which stopped being true two sprints ago.
 
+Anthropic has observed an interesting mirror phenomenon on the agent side: when agents sense the context running out, they rush to finish, skip verification, and pick a simpler solution over the optimal one. They call this **"context anxiety"** — the model-side counterpart to the four user-side symptoms above. Both come from the same source: a finite window, with not enough room for everything that needs to be there.
+
 All four symptoms are the same complaint in different words: **you do not know what Claude knows, beyond a feeling.** The good news is that the feeling is addressable — everything Claude currently carries is a file on your disk, and two commands will show them to you.
 
 ---
