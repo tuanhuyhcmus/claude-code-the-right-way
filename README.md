@@ -66,6 +66,8 @@ A note before going further: this part is for the *lazy* — people who want a q
 
 This piece tries to *ask the right questions* (in the AI era, I believe that being able to pose the question almost guarantees you can find the answer) — slipping into your thinking to provoke it, rather than acting as a tutorial.
 
+Honest disclosure: the part below is Claude paraphrasing from my outline (I can vouch that it still drives at the same goal — answering how Claude actually works and how to use it effectively). The rhythm may not match the opening, though, so if you are picky or short on time, I still think you should keep reading — call it patience training.
+
 Everything above is the universal problem of using AI today, and it is mostly **the finiteness of context**. The rest of this guide is the concrete version: how to steer that context skillfully so the answers come back better — through one specific client, **Claude Code**.
 
 This is not a *best practice*; it is personal experience, and none of it is gospel. **What is gospel is Part 1.** There are plenty of other best practices out there; what may differ here is that I explain *why* I do it this way and why it works, grounded in the underlying mechanics. I hope that makes us smarter about choosing among ready-made solutions to use, rather than treating this guide as a closed kit.

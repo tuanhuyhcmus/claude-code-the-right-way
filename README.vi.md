@@ -72,6 +72,8 @@ Một lưu ý nhỏ trước khi đi tiếp: phần này dành cho những bạn
 
 Bài này cố gắng *đặt câu hỏi* (tôi tin trong thời đại AI, chỉ cần đặt được câu hỏi là gần như chắc chắn có câu trả lời) — len lỏi vào suy nghĩ để khai phá tư duy, hơn là một bài hướng dẫn.
 
+Thú thật, đoạn dưới là Claude diễn giải theo dàn ý của tôi (tôi đảm bảo nó vẫn hướng đến mục đích cuối là trả lời được các câu hỏi về cách Claude hoạt động và cách dùng cho hiệu quả). Tuy nhiên nhịp văn có thể không như đoạn đầu, nên nếu bạn là người khó tính hoặc không có thời gian thì tôi nghĩ bạn nên đọc tiếp để rèn luyện tính kiên nhẫn.
+
 Trên đây là toàn bộ vấn đề mà người dùng phải đối mặt khi sử dụng AI, mà chủ yếu là **sự hữu hạn của context**. Phần dưới sẽ cụ thể hoá: làm thế nào để điều khiển context đó một cách khéo léo nhằm nhận được kết quả tốt hơn — thông qua một client cụ thể là **Claude Code**.
 
 Đó không phải *best practice*, đó chỉ là kinh nghiệm cá nhân. Có rất nhiều best practice khác(hoặc toàn là rác đi farm star); điểm khác biệt ở đây là tôi giải thích vì sao tôi làm và vì sao cách làm đó chạy được, dựa trên kiến thức nền tảng. Tôi nghĩ việc này sẽ giúp chúng ta khôn ngoan hơn khi chọn dùng các giải pháp có sẵn — thay vì xem repo này như một bộ giải pháp đóng gói.
